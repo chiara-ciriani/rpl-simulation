@@ -4,6 +4,7 @@ class Message:
         self.destination = destination
         self.data = data
         self.route = []  # Lista para almacenar la ruta del mensaje
+        self.multicast_route = {}
 
     def get_origin(self):
         return self.origin
@@ -16,6 +17,17 @@ class Message:
     
     def get_route(self):
         print(f"Route: {[node.id for node in self.route]}")
+
+    def add_node_to_multicast_route(self, id, node):
+        current_route = self.multicast_route.get(id, []) 
+        current_route.append(node)
+        self.multicast_route[id] = current_route
+
+    def get_multicast_route(self):
+        result = []
+        for route in self.multicast_route.values():
+            result.append(route)
+        return result
     
     def __eq__(self, other):
         return self.origin == other.origin and self.destination == other.destination and self.data == other.data

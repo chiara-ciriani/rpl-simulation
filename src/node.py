@@ -135,6 +135,10 @@ class Node:
     def forward_message(self, message):
         for neighbor in self.neighbors:
             if neighbor.get_mpl_domain() == self.mpl_domain and neighbor != message.get_origin():
+                self.mpl_domain.increase_message_count()
+                message_id = self.mpl_domain.get_message_count()
+                message.add_node_to_multicast_route(message_id, self.id)
+                message.add_node_to_multicast_route(message_id, neighbor.id)
                 neighbor.receive_message(message)
 
 

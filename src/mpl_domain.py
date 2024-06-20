@@ -3,6 +3,7 @@ class MPL_Domain:
         self.id = id
         self.nodes = []
         self.mpl_domain_address = mpl_domain_address
+        self.message_count = 0
 
     def add_node(self, node):
         if node not in self.nodes:
@@ -10,6 +11,12 @@ class MPL_Domain:
             node.mpl_domain = self
             print(f"Node {node.id} added to MPL Domain {self.id}")
 
+    def get_message_count(self):
+        return self.message_count
+    
+    def increase_message_count(self):
+        self.message_count += 1
+    
     def __eq__(self, other):
         if isinstance(other, MPL_Domain):
             return self.id == other.id  

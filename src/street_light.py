@@ -12,6 +12,7 @@ class StreetLight(Node):
         print(f"Street Light {self.id} sending movement alert to MPL domain {self.mpl_domain_address}")
         message = Message(self.id, self.mpl_domain_address, "MPL Alert")
         self.forward_message(message)
+        return message
 
     def forward_message(self, message):
         if message.get_destination() == self.mpl_domain_address and not self.turn_on:
