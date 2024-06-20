@@ -33,19 +33,48 @@ def create_network(env, num_nodes, tx_range):
     return nodes, positions
 
 
+# Function to find a random node within max_distance from current street lights
+def find_random_node_within_distance(nodes, current_nodes, positions, max_distance):
+    potential_nodes = []
+    for node in nodes:
+        if node.id not in current_nodes:
+            for idx in current_nodes:
+                distance = ((positions[node.id][0] - positions[idx][0]) ** 2 + (positions[node.id][1] - positions[idx][1]) ** 2) ** 0.5
+                if distance < max_distance:
+                    potential_nodes.append(node)
+    if potential_nodes:
+        return random.choice(potential_nodes)
+    else:
+        return None
+
 def create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range):
     nodes = [Node(env, i, tx_range) for i in range(num_nodes)]
 
     mpl_domain_address = "MPL_Domain_1"
     mpl_domain = MPL_Domain(1, mpl_domain_address)
     
-    # Randomly select nodes to be street lights
-    street_light_indices = random.sample(range(num_nodes), num_street_lights)
-    for idx in street_light_indices:
-        nodes[idx] = StreetLight(env, idx, tx_range, mpl_domain_address)
-    
-    # Randomly place nodes in a 2D space and find neighbors within tx_range
+    # Randomly select the first street light
+    street_light_indices = [random.randint(0, num_nodes - 1)]
+    nodes[street_light_indices[0]] = StreetLight(env, street_light_indices[0], tx_range, mpl_domain_address)
+
+    # Randomly place nodes in a 2D space
     positions = {node.id: (random.uniform(0, 70), random.uniform(0, 70)) for node in nodes}
+
+    # Select the remaining street lights within a certain range of the previous ones
+    max_distance = 30  # Define the maximum distance allowed for the next street light
+    while len(street_light_indices) < num_street_lights:
+        nearest_node = find_random_node_within_distance(nodes, street_light_indices, positions, max_distance)
+        if nearest_node:
+            nodes[nearest_node.id] = StreetLight(env, nearest_node.id, tx_range, mpl_domain_address)
+            street_light_indices.append(nearest_node.id)
+        else:
+            # If no node is found within the max_distance, select one randomly
+            remaining_indices = [i for i in range(num_nodes) if i not in street_light_indices]
+            nearest_node_idx = random.choice(remaining_indices)
+            nodes[nearest_node_idx] = StreetLight(env, nearest_node_idx, tx_range, mpl_domain_address)
+            street_light_indices.append(nearest_node_idx)
+    
+    # Assign neighbors based on tx_range after all nodes have been created and positioned
     for node in nodes:
         node_pos = positions[node.id]
         for other_node in nodes:
