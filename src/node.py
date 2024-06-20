@@ -72,6 +72,7 @@ class Node:
             print(f"Node {self.id} updated preferred parent to Node {parent.id}")
         
     def send_message_upwards(self, message):
+        message.add_node_to_route(self)
         if self.id == message.get_destination():
             print(f"Node {self.id}: Message delivered to destination {message.get_destination()} :)")
         else:
@@ -86,6 +87,7 @@ class Node:
                 print(f"Node {self.id}: No preferred parent set to send message upwards.")
     
     def send_message_downwards(self, message):
+        message.add_node_to_route(self)
         if self.id == message.get_destination():
             print(f"Node {self.id}: Message delivered to destination {message.get_destination()}")
         else:

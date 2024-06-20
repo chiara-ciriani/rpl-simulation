@@ -35,6 +35,10 @@ def main():
  
     # Simular el envío del mensaje desde el nodo origen
     origin_node.send_message_upwards(message)
+
+    print()
+
+    print(f"Route: {message.get_route()}")
     
     # Plot the resulting DODAG
     plot_dodag(nodes, positions)

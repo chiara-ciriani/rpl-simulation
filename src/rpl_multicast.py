@@ -37,7 +37,11 @@ if __name__ == "__main__":
 
 
 # FALTA: 
-#  - En network: asignar los nodos al MPL Domain. 
-#  - Crear la instancia de MPL Domain e ir agregando los nodos.
-#    Creo que se va a crear solo con id y address y el resto de los nodos se van agregando a medida que se crean
-#    Agregar logica de crear grupos cercanos y chiquitos
+#  maybe mejorar la forma de crear domains
+# faltaria mezclar ambas formas y contar en ambas el number of hops
+# despues eso se lo podriamos pasar al algoritmo de calculaciones?
+# el tema es que no tendriamos los canales y eso, pero podría ser una probabilidad
+# TO DO: cambiar canales en el otro codigo a probabilidad maybe
+# pasarle al algoritmo el route y la lista de ids de nodes mejor
+
+# AGREGAR PROJECTED ROUTES
