@@ -1,16 +1,48 @@
-import simpy
 import random
 import matplotlib.pyplot as plt
+from mpl_domain import MPL_Domain
 from node import Node
 from street_light import StreetLight
 
-def create_network(env, num_nodes, num_street_lights, tx_range):
+def create_network(env, num_nodes, tx_range):
     nodes = [Node(env, i, tx_range) for i in range(num_nodes)]
+    
+    # Randomly place nodes in a 2D space and find neighbors within tx_range
+    positions = {node.id: (random.uniform(0, 70), random.uniform(0, 70)) for node in nodes}
+    for node in nodes:
+        node_pos = positions[node.id]
+        for other_node in nodes:
+            if other_node.id != node.id:
+                other_pos = positions[other_node.id]
+                distance = ((node_pos[0] - other_pos[0]) ** 2 + (node_pos[1] - other_pos[1]) ** 2) ** 0.5
+                if distance <= node.tx_range:
+                    node.neighbors.append(other_node)
+    
+    root_node = random.choice(nodes)
+    root_node.set_as_root()
+
+    # Verificar y asignar preferred_parent si falta
+    for node in nodes:
+        if not node.is_root and node.preferred_parent is None:
+            potential_parents = [neighbor for neighbor in node.neighbors if neighbor.rank is not None]
+            if potential_parents:
+                node.preferred_parent = random.choice(potential_parents)
+                node.preferred_parent.children.append(node)
+                print(f"Node {node.id} assigned random preferred parent Node {node.preferred_parent.id}")
+
+    return nodes, positions
+
+
+def create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range):
+    nodes = [Node(env, i, tx_range) for i in range(num_nodes)]
+
+    mpl_domain_address = "MPL_Domain_1"
+    mpl_domain = MPL_Domain(1, mpl_domain_address)
     
     # Randomly select nodes to be street lights
     street_light_indices = random.sample(range(num_nodes), num_street_lights)
     for idx in street_light_indices:
-        nodes[idx] = StreetLight(env, idx, tx_range)
+        nodes[idx] = StreetLight(env, idx, tx_range, mpl_domain_address)
     
     # Randomly place nodes in a 2D space and find neighbors within tx_range
     positions = {node.id: (random.uniform(0, 70), random.uniform(0, 70)) for node in nodes}
@@ -28,7 +60,7 @@ def create_network(env, num_nodes, num_street_lights, tx_range):
     root_node = nodes[root_node_idx]
     root_node.set_as_root()
 
-    # Verificar y asignar preferred_parent si falta
+    # Assign preferred parents if not set
     for node in nodes:
         if not node.is_root and node.preferred_parent is None:
             potential_parents = [neighbor for neighbor in node.neighbors if neighbor.rank is not None]
@@ -37,7 +69,23 @@ def create_network(env, num_nodes, num_street_lights, tx_range):
                 node.preferred_parent.children.append(node)
                 print(f"Node {node.id} assigned random preferred parent Node {node.preferred_parent.id}")
 
+    # Add street lights and necessary relay nodes to MPL Domain
+    for street_light in [node for node in nodes if isinstance(node, StreetLight)]:
+        mpl_domain.add_node(street_light)
+
+    # Ensure all street lights can communicate within the MPL Domain
+    for street_light in [node for node in nodes if isinstance(node, StreetLight)]:
+        for other_node in nodes:
+            if street_light != other_node and other_node not in mpl_domain.nodes:
+                shortest_path = street_light.compute_shortest_path_to_destination(other_node.id)
+                if shortest_path:
+                    for path_node in shortest_path:
+                        mpl_domain.add_node(path_node)
+
+    print(f"MPL Domain: {mpl_domain}")
+                        
     return nodes, positions
+
 
 def plot_dodag(nodes, positions):
     street_light_label_plotted = False

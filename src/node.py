@@ -19,6 +19,10 @@ class Node:
         self.rank = None
         self.preferred_parent = None
 
+        # RPL MULTICAST
+        self.mpl_domain = None  # MPL Domain al que pertenece el nodo
+        self.received_messages = []  # Lista de mensajes recibidos
+
         env.process(self.run())
 
     def run(self):
@@ -112,6 +116,28 @@ class Node:
         
         return []
     
+
+    # RPL MULTICAST
+
+    def get_mpl_domain(self):
+        return self.mpl_domain
+
+    def receive_message(self, message):
+        if message not in self.received_messages:
+            self.received_messages.append(message)
+            print(f"Node {self.id} received message from {message.get_origin()}")
+            self.forward_message(message)
+        else:
+            print(f"Node {self.id} already received message to {message.get_destination()}")
+
+    def forward_message(self, message):
+        for neighbor in self.neighbors:
+            if neighbor.get_mpl_domain() == self.mpl_domain and neighbor != message.get_origin():
+                neighbor.receive_message(message)
+
+
+    # PRINTING AND DEBUGGING
+
     def print_node_details(self):
         print(f"Node ID: {self.id}")
         print(f"Transmission Range: {self.tx_range}")
@@ -121,6 +147,8 @@ class Node:
         print(f"Parent: {self.parent.id if self.parent else None}")
         print(f"Preferred parent: {self.preferred_parent.id if self.preferred_parent else None}")
         print(f"Rank: {self.rank}")
+        print(f"MPL Domain: {self.mpl_domain.id if self.mpl_domain else None}")
+        print(f"Received Messages: {[(msg.get_origin(), msg.get_destination()) for msg in self.received_messages]}")
         print()
 
     def __str__(self):

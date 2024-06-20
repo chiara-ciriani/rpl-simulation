@@ -7,10 +7,9 @@ def main():
     env = simpy.Environment()
     tx_range = 40  # Increased transmission range for each node
     num_nodes = 20 # Total number of nodes in the network
-    num_street_lights = 5  # Number of street lights
 
     # Create the network
-    nodes, positions = create_network(env, num_nodes, num_street_lights, tx_range)
+    nodes, positions = create_network(env, num_nodes, tx_range)
     
     # Run the simulation
     env.run(until=20)
