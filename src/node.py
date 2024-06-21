@@ -79,6 +79,7 @@ class Node:
             # Enviar mensaje hacia arriba en el DODAG (hacia el preferred parent)
             if self.is_root:
                 # Soy la raíz, proceso el mensaje aquí o lo reenvío hacia abajo
+                message.remove_node_from_route()
                 self.send_message_downwards(message)
             elif self.preferred_parent:
                 print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")

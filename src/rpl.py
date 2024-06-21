@@ -38,7 +38,7 @@ def main():
 
     print()
 
-    print(f"Route: {message.get_route()}")
+    print(f"Route: {message.print_route()}")
     
     # Plot the resulting DODAG
     plot_dodag(nodes, positions)

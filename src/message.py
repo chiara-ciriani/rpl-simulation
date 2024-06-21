@@ -14,8 +14,14 @@ class Message:
     
     def add_node_to_route(self, node):
         self.route.append(node)
-    
+
+    def remove_node_from_route(self):
+        self.route.pop()
+
     def get_route(self):
+        return self.route
+    
+    def print_route(self):
         print(f"Route: {[node.id for node in self.route]}")
 
     def add_node_to_multicast_route(self, id, node):
