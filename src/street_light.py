@@ -2,11 +2,12 @@ from message import Message
 from node import Node
 
 class StreetLight(Node):
-    def __init__(self, env, id, tx_range, mpl_domain_address):
+    def __init__(self, env, id, tx_range, mpl_domain_address=None):
         super().__init__(env, id, tx_range)
         self.is_street_light = True
         self.turn_on = False
         self.mpl_domain_address = mpl_domain_address
+        self.track = None
     
     def send_movement_alert(self):
         print(f"Street Light {self.id} sending movement alert to MPL domain {self.mpl_domain_address}")
@@ -22,3 +23,12 @@ class StreetLight(Node):
 
     def __str__(self):
         return f"Street Light {self.id}"
+    
+    def install_track(self, track):
+        self.track = track
+
+        print(f"Street light {self.id} track:\n")
+        print(self.track)
+    
+    def send_message_through_track(self, target):
+        return self.track.send_message_through_track(target)

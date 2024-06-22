@@ -41,8 +41,8 @@ class Message:
             result.append(route)
         return result
     
-    def is_movement_alert_message(self):
-        return self.data == "Movement Alert"
+    def is_rpl_second_approach_message(self):
+        return self.data == "RPL Second Approach: Movement Alert!"
     
     def add_routes_to_message(self, routes):
         self.route = routes

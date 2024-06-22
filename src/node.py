@@ -79,7 +79,7 @@ class Node:
             if self.is_root:
                 # Soy la raíz, proceso el mensaje aquí o lo reenvío hacia abajo
                 message.remove_node_from_route()
-                if message.is_movement_alert_message():
+                if message.is_rpl_second_approach_message():
                     message.add_node_to_route(self)
                     self.forward_message_to_all(message)
                 else:
@@ -87,7 +87,7 @@ class Node:
             elif self.preferred_parent:
                 print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")
 
-                if message.is_movement_alert_message():
+                if message.is_rpl_second_approach_message():
                     message.check_if_node_is_a_destination(self.id)
 
                 self.preferred_parent.send_message_upwards(message)

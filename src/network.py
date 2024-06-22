@@ -1,8 +1,10 @@
 import random
 import matplotlib.pyplot as plt
+import networkx as nx
 from mpl_domain import MPL_Domain
 from node import Node
 from street_light import StreetLight
+from track import Track
 
 def create_network(env, num_nodes, tx_range):
     nodes = [Node(env, i, tx_range) for i in range(num_nodes)]
@@ -113,6 +115,77 @@ def create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range):
 
     print(f"MPL Domain: {mpl_domain}")
                         
+    return nodes, positions
+
+
+def compute_tracks(nodes):
+     # Compute shortest paths using Dijkstra's algorithm and create tracks
+    graph = nx.Graph()
+    for node in nodes:
+        for neighbor in node.neighbors:
+            graph.add_edge(node.id, neighbor.id, weight=1)  # Assuming equal weight for all edges
+
+    street_lights = [node for node in nodes if isinstance(node, StreetLight)]
+
+    for street_light in street_lights:
+        targets = [sl.id for sl in street_lights if sl.id != street_light.id]
+        track = Track(street_light.id, targets)
+        for target in targets:
+            path = nx.shortest_path(graph, source=street_light.id, target=target, weight='weight')
+            route_nodes = [nodes[node_id] for node_id in path]
+            track.install_route_to_target(target, route_nodes)
+        street_light.install_track(track)
+
+def create_network_with_tracks(env, num_nodes, num_street_lights, tx_range):
+    nodes = [Node(env, i, tx_range) for i in range(num_nodes)]
+    
+    # Randomly select the first street light
+    street_light_indices = [random.randint(0, num_nodes - 1)]
+    nodes[street_light_indices[0]] = StreetLight(env, street_light_indices[0], tx_range)
+
+    # Randomly place nodes in a 2D space
+    positions = {node.id: (random.uniform(0, 70), random.uniform(0, 70)) for node in nodes}
+
+    # Select the remaining street lights within a certain range of the previous ones
+    max_distance = 30  # Define the maximum distance allowed for the next street light
+    while len(street_light_indices) < num_street_lights:
+        nearest_node = find_random_node_within_distance(nodes, street_light_indices, positions, max_distance)
+        if nearest_node:
+            nodes[nearest_node.id] = StreetLight(env, nearest_node.id, tx_range)
+            street_light_indices.append(nearest_node.id)
+        else:
+            # If no node is found within the max_distance, select one randomly
+            remaining_indices = [i for i in range(num_nodes) if i not in street_light_indices]
+            nearest_node_idx = random.choice(remaining_indices)
+            nodes[nearest_node_idx] = StreetLight(env, nearest_node_idx, tx_range)
+            street_light_indices.append(nearest_node_idx)
+    
+    # Assign neighbors based on tx_range after all nodes have been created and positioned
+    for node in nodes:
+        node_pos = positions[node.id]
+        for other_node in nodes:
+            if other_node.id != node.id:
+                other_pos = positions[other_node.id]
+                distance = ((node_pos[0] - other_pos[0]) ** 2 + (node_pos[1] - other_pos[1]) ** 2) ** 0.5
+                if distance <= node.tx_range:
+                    node.neighbors.append(other_node)
+    
+    # Randomly select a root node that is not a street light
+    root_node_idx = random.choice([i for i in range(num_nodes) if i not in street_light_indices])
+    root_node = nodes[root_node_idx]
+    root_node.set_as_root()
+
+    # Assign preferred parents if not set
+    for node in nodes:
+        if not node.is_root and node.preferred_parent is None:
+            potential_parents = [neighbor for neighbor in node.neighbors if neighbor.rank is not None]
+            if potential_parents:
+                node.preferred_parent = random.choice(potential_parents)
+                node.preferred_parent.children.append(node)
+                print(f"Node {node.id} assigned random preferred parent Node {node.preferred_parent.id}")
+                        
+    compute_tracks(nodes)
+
     return nodes, positions
 
 
