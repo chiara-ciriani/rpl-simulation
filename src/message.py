@@ -22,7 +22,13 @@ class Message:
         return self.route
     
     def print_route(self):
-        print(f"Route: {[node.id for node in self.route]}")
+        if all(isinstance(route, list) for route in self.route):
+            # Si self.route es una lista de listas
+            for route in self.route:
+                print(f"Route: {[node.id for node in route]}")
+        else:
+            # Si self.route es una lista simple
+            print(f"Route: {[node.id for node in self.route]}")
 
     def add_node_to_multicast_route(self, id, node):
         current_route = self.multicast_route.get(id, []) 
@@ -35,6 +41,16 @@ class Message:
             result.append(route)
         return result
     
+    def is_movement_alert_message(self):
+        return self.data == "Movement Alert"
+    
+    def add_routes_to_message(self, routes):
+        self.route = routes
+
+    def check_if_node_is_a_destination(self, node_id):
+        if node_id in self.destination:
+            self.destination.remove(node_id)
+
     def __eq__(self, other):
         return self.origin == other.origin and self.destination == other.destination and self.data == other.data
 

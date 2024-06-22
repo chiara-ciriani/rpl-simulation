@@ -1,6 +1,5 @@
-import simpy
 import random
-import matplotlib.pyplot as plt
+from message import Message
 
 class Node:
     def __init__(self, env, id, tx_range):
@@ -80,9 +79,17 @@ class Node:
             if self.is_root:
                 # Soy la raíz, proceso el mensaje aquí o lo reenvío hacia abajo
                 message.remove_node_from_route()
-                self.send_message_downwards(message)
+                if message.is_movement_alert_message():
+                    message.add_node_to_route(self)
+                    self.forward_message_to_all(message)
+                else:
+                    self.send_message_downwards(message)
             elif self.preferred_parent:
                 print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")
+
+                if message.is_movement_alert_message():
+                    message.check_if_node_is_a_destination(self.id)
+
                 self.preferred_parent.send_message_upwards(message)
             else:
                 print(f"Node {self.id}: No preferred parent set to send message upwards.")
@@ -119,6 +126,29 @@ class Node:
         
         return []
     
+    def forward_message_to_all(self, message):
+        # tengo que mandar a todas las street lights
+        routes = []
+        street_lights = message.get_destination()
+
+        # Caso en que la street_light destination sea hijo directo: no hace falta ir a la raiz
+        remaining_destinations = []
+        for street_light in street_lights:
+            for child in self.children:
+                if child.id == street_light:
+                    # Si el destino es un hijo directo
+                    direct_message = Message(self.id, street_light, message.data)
+                    child.receive_message(direct_message)
+                    routes.append(direct_message.get_route())
+            else:
+                # Agregar a los destinos restantes que deben enviarse a través de la raíz
+                remaining_destinations.append(street_light)
+
+        for street_light in remaining_destinations:
+            new_message = Message(self.id, street_light, message.data)
+            self.send_message_downwards(new_message)
+            routes.append(new_message.get_route())
+        message.add_routes_to_message([message.get_route()] + routes)
 
     # RPL MULTICAST
 
