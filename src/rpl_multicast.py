@@ -1,13 +1,12 @@
-import simpy
+import argparse
 import random
+import simpy
+
 from network import create_network_with_mpl_domain, plot_dodag
 from street_light import StreetLight
 
-def main():
+def send_message_in_mpl_domain(tx_range, num_nodes, num_street_lights):
     env = simpy.Environment()
-    tx_range = 30  # Increased transmission range for each node
-    num_nodes = 10 # Total number of nodes in the network
-    num_street_lights = 3  # Number of street lights
 
     # Create the network
     nodes, positions = create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range)
@@ -37,7 +36,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
+    parser.add_argument('--tx_range', type=int, default=30, help='Transmission range for each node')
+    parser.add_argument('--num_nodes', type=int, default=10, help='Total number of nodes in the network')
+    parser.add_argument('--num_street_lights', type=int, default=3, help='Number of street lights')
+
+    args = parser.parse_args()
+
+    send_message_in_mpl_domain(args.tx_range, args.num_nodes, args.num_street_lights)
 
 
 # FALTA: 

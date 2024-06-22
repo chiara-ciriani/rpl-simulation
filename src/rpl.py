@@ -1,12 +1,12 @@
-import simpy
+import argparse
 import random
-from network import create_network, plot_dodag
-from message import Message
+import simpy
 
-def main():
+from message import Message
+from network import create_network, plot_dodag
+
+def send_message_using_rpl_operation(tx_range, num_nodes):
     env = simpy.Environment()
-    tx_range = 40  # Increased transmission range for each node
-    num_nodes = 20 # Total number of nodes in the network
 
     # Create the network
     nodes, positions = create_network(env, num_nodes, tx_range)
@@ -45,4 +45,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Send messages to random node in a network simulation using RPL Operation.")
+    parser.add_argument('--tx_range', type=int, default=40, help='Transmission range for each node')
+    parser.add_argument('--num_nodes', type=int, default=20, help='Total number of nodes in the network')
+
+    args = parser.parse_args()
+
+    send_message_using_rpl_operation(args.tx_range, args.num_nodes)
