@@ -154,6 +154,9 @@ class Node:
 
     def get_mpl_domain(self):
         return self.mpl_domain
+    
+    def get_id(self):
+        return self.id
 
     def receive_message(self, message):
         if message not in self.received_messages:
@@ -166,11 +169,15 @@ class Node:
     def forward_message(self, message):
         for neighbor in self.neighbors:
             if neighbor.get_mpl_domain() == self.mpl_domain and neighbor != message.get_origin():
-                self.mpl_domain.increase_message_count()
-                message_id = self.mpl_domain.get_message_count()
-                message.add_node_to_multicast_route(message_id, self.id)
-                message.add_node_to_multicast_route(message_id, neighbor.id)
-                neighbor.receive_message(message)
+                if self.id == message.get_origin() and message.is_destination_in_multicast_origin_sent_destination(neighbor.get_id()):
+                    continue
+                else:
+                    message.add_destination_to_multicast_origin_sent_destination(neighbor.get_id())
+                    self.mpl_domain.increase_message_count()
+                    message_id = self.mpl_domain.get_message_count()
+                    message.add_node_to_multicast_route(message_id, self.id)
+                    message.add_node_to_multicast_route(message_id, neighbor.id)
+                    neighbor.receive_message(message)
 
 
     # PRINTING AND DEBUGGING

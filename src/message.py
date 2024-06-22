@@ -5,6 +5,7 @@ class Message:
         self.data = data
         self.route = []  # Lista para almacenar la ruta del mensaje
         self.multicast_route = {}
+        self.multicast_origin_sent_destination = []
 
     def get_origin(self):
         return self.origin
@@ -40,6 +41,12 @@ class Message:
         for route in self.multicast_route.values():
             result.append(route)
         return result
+    
+    def add_destination_to_multicast_origin_sent_destination(self, destination_id):
+        self.multicast_origin_sent_destination.append(destination_id)
+
+    def is_destination_in_multicast_origin_sent_destination(self, destination_id):
+        return destination_id in self.multicast_origin_sent_destination
     
     def is_rpl_second_approach_message(self):
         return self.data == "RPL Second Approach: Movement Alert!"
