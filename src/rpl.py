@@ -3,7 +3,7 @@ import random
 import simpy
 
 from message import Message
-from network import create_network, plot_dodag
+from network import create_network, plot_basic_dodag
 
 def send_message_using_rpl_operation(tx_range, num_nodes):
     env = simpy.Environment()
@@ -34,14 +34,14 @@ def send_message_using_rpl_operation(tx_range, num_nodes):
     message = Message(origin_node.id, destination, "Hello, world!")
  
     # Simular el envío del mensaje desde el nodo origen
-    origin_node.send_message_upwards(message)
+    origin_node.send_message_upwards(message, True)
 
     print()
 
     print(f"Route: {message.print_route()}")
     
     # Plot the resulting DODAG
-    plot_dodag(nodes, positions)
+    plot_basic_dodag(nodes, positions)
 
 
 if __name__ == "__main__":

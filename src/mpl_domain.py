@@ -5,11 +5,11 @@ class MPL_Domain:
         self.mpl_domain_address = mpl_domain_address
         self.message_count = 0
 
-    def add_node(self, node):
+    def add_node(self, node, verbose):
         if node not in self.nodes:
             self.nodes.append(node)
             node.mpl_domain = self
-            print(f"Node {node.id} added to MPL Domain {self.id}")
+            if verbose: print(f"Node {node.id} added to MPL Domain {self.id}")
 
     def get_message_count(self):
         return self.message_count

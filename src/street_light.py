@@ -9,26 +9,27 @@ class StreetLight(Node):
         self.mpl_domain_address = mpl_domain_address
         self.track = None
     
-    def send_movement_alert(self):
-        print(f"Street Light {self.id} sending movement alert to MPL domain {self.mpl_domain_address}")
+    def send_movement_alert(self, verbose):
+        if verbose: print(f"Street Light {self.id} sending movement alert to MPL domain {self.mpl_domain_address}")
         message = Message(self.id, self.mpl_domain_address, "MPL Alert")
-        self.forward_message(message)
+        self.forward_message(message, verbose)
         return message
 
-    def forward_message(self, message):
+    def forward_message(self, message, verbose):
         if message.get_destination() == self.mpl_domain_address and not self.turn_on:
             self.turn_on = True
-            print(f"Street Light {self.id} turned ON due to MPL message.")
-        super().forward_message(message)
+            if verbose: print(f"Street Light {self.id} turned ON due to MPL message.")
+        super().forward_message(message, verbose)
 
     def __str__(self):
         return f"Street Light {self.id}"
     
-    def install_track(self, track):
+    def install_track(self, track, verbose):
         self.track = track
 
-        print(f"Street light {self.id} track:\n")
-        print(self.track)
+        if verbose:
+            print(f"Street light {self.id} track:\n")
+            print(self.track)
     
     def send_message_through_track(self, target):
         return self.track.send_message_through_track(target)

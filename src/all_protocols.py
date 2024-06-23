@@ -2,15 +2,15 @@ import argparse
 import random
 import simpy
 
-from protocols import rpl_operation_second_approach
-from network import create_network_with_mpl_domain, plot_dodag
+from network import create_network_with_mpl_domain_and_tracks, plot_dodag
+from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approach, rpl_projected_routes
 from street_light import StreetLight
 
-def send_to_all_street_lights_using_rpl_root(tx_range, num_nodes, num_street_lights, verbose=False):
+def send_to_all_street_lights_using_all_protocols(tx_range, num_nodes, num_street_lights, verbose=False):
     env = simpy.Environment()
 
     # Create the network
-    nodes, positions = create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range, verbose)
+    nodes, positions = create_network_with_mpl_domain_and_tracks(env, num_nodes, num_street_lights, tx_range, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Run the simulation
@@ -28,12 +28,11 @@ def send_to_all_street_lights_using_rpl_root(tx_range, num_nodes, num_street_lig
     if verbose:
         print(f"Street light {origin_node.id} sending messages to all other street lights\n")
 
-    message = rpl_operation_second_approach(street_lights, origin_node, verbose)
-    
-    if verbose:
-        print()
-        
-    message.print_route()
+    routes = rpl_operation(street_lights, origin_node, verbose)
+    message_rpl_second_approach = rpl_operation_second_approach(street_lights, origin_node, verbose)
+    routes = rpl_projected_routes(street_lights, origin_node)
+    message = rpl_multicast(origin_node, verbose)
+
 
     # Plot the resulting DODAG
     if verbose:
@@ -48,4 +47,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    send_to_all_street_lights_using_rpl_root(args.tx_range, args.num_nodes, args.num_street_lights, args.verbose)
+    send_to_all_street_lights_using_all_protocols(args.tx_range, args.num_nodes, args.num_street_lights, args.verbose)

@@ -3,36 +3,42 @@ import random
 import simpy
 
 from network import create_network_with_mpl_domain, plot_dodag
+from protocols import rpl_multicast
 from street_light import StreetLight
 
-def send_message_in_mpl_domain(tx_range, num_nodes, num_street_lights):
+def send_message_in_mpl_domain(tx_range, num_nodes, num_street_lights, verbose=False):
     env = simpy.Environment()
 
     # Create the network
-    nodes, positions = create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range)
+    nodes, positions = create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Run the simulation
     env.run(until=30)
 
-    print()
+    if verbose:
+        print()
 
-    for node in nodes:
-        node.print_node_details()
+        for node in nodes:
+            node.print_node_details()
 
-    print()
+        print()
 
     origin_node = random.choice(street_lights)
 
-    print(f"Street light {origin_node.id} detected movement\n")
-    message = origin_node.send_movement_alert()
+    if verbose:
+        print(f"Street light {origin_node.id} sending messages to all other street lights\n")
 
-    print()
+    message = rpl_multicast(origin_node, verbose)
+
+    if verbose:
+        print()
 
     print(f"Route: {message.get_multicast_route()}")
     
     # Plot the resulting DODAG
-    plot_dodag(nodes, positions)
+    if verbose:
+        plot_dodag(nodes, positions)
 
 
 if __name__ == "__main__":
@@ -40,10 +46,11 @@ if __name__ == "__main__":
     parser.add_argument('--tx_range', type=int, default=30, help='Transmission range for each node')
     parser.add_argument('--num_nodes', type=int, default=10, help='Total number of nodes in the network')
     parser.add_argument('--num_street_lights', type=int, default=3, help='Number of street lights')
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     args = parser.parse_args()
 
-    send_message_in_mpl_domain(args.tx_range, args.num_nodes, args.num_street_lights)
+    send_message_in_mpl_domain(args.tx_range, args.num_nodes, args.num_street_lights, args.verbose)
 
 
 # FALTA: 
