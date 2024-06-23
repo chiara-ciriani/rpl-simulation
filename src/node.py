@@ -93,9 +93,11 @@ class Node:
                 if verbose: print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")
 
                 if message.is_rpl_second_approach_message():
-                    message.check_if_node_is_a_destination(self.id)
-
-                self.preferred_parent.send_message_upwards(message, verbose)
+                    message.remove_node_if_is_a_destination(self.id)
+                    if message.are_still_destinations():
+                        self.preferred_parent.send_message_upwards(message, verbose) 
+                else:
+                    self.preferred_parent.send_message_upwards(message, verbose)
             else:
                 if verbose: print(f"Node {self.id}: No preferred parent set to send message upwards.")
     
@@ -142,9 +144,7 @@ class Node:
             for child in self.children:
                 if child.id == street_light:
                     # Si el destino es un hijo directo
-                    direct_message = Message(self.id, street_light, message.data)
-                    child.receive_message(direct_message, verbose)
-                    routes.append(direct_message.get_route())
+                    routes.append([self.id, street_light])
             else:
                 # Agregar a los destinos restantes que deben enviarse a través de la raíz
                 remaining_destinations.append(street_light)

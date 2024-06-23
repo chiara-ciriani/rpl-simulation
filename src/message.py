@@ -54,9 +54,12 @@ class Message:
     def add_routes_to_message(self, routes):
         self.route = routes
 
-    def check_if_node_is_a_destination(self, node_id):
+    def remove_node_if_is_a_destination(self, node_id):
         if node_id in self.destination:
             self.destination.remove(node_id)
+
+    def are_still_destinations(self):
+        return len(self.destination)
 
     def __eq__(self, other):
         return self.origin == other.origin and self.destination == other.destination and self.data == other.data

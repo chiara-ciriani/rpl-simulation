@@ -28,12 +28,9 @@ def send_to_all_street_lights_using_projected_routes(tx_range, num_nodes, num_st
     if verbose:
         print(f"Street light {origin_node.id} sending messages to all other street lights\n")
 
-    routes = rpl_projected_routes(street_lights, origin_node)
+    total_hops = rpl_projected_routes(street_lights, origin_node, verbose)
     
-    if verbose:
-        print()
-
-    print(f"Routes: {[[node.id for node in route] for route in routes]}")
+    print(total_hops)
 
     # Plot the resulting DODAG
     if verbose:

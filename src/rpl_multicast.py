@@ -29,12 +29,9 @@ def send_message_in_mpl_domain(tx_range, num_nodes, num_street_lights, verbose=F
     if verbose:
         print(f"Street light {origin_node.id} sending messages to all other street lights\n")
 
-    message = rpl_multicast(origin_node, verbose)
+    total_hops = rpl_multicast(origin_node, verbose)
 
-    if verbose:
-        print()
-
-    print(f"Route: {message.get_multicast_route()}")
+    print(total_hops)
     
     # Plot the resulting DODAG
     if verbose:
