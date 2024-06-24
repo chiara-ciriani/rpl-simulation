@@ -1,4 +1,5 @@
 from message import Message
+from utils import find_shortest_paths
 
 def calculate_total_hops(routes):
     return sum(len(route) - 1 for route in routes)
@@ -54,7 +55,7 @@ def rpl_projected_routes(street_lights, origin_node, verbose):
 
     return calculate_total_hops(routes)
 
-def rpl_multicast(origin_node, verbose):
+def rpl_multicast(origin_node, street_lights, verbose):
     message = origin_node.send_movement_alert(verbose)
 
     routes = message.get_multicast_route()
@@ -63,4 +64,9 @@ def rpl_multicast(origin_node, verbose):
         print()
         print(f"Routes: {routes}")
 
-    return calculate_total_hops(routes)
+    # total_message_sent = calculate_total_hops(routes)
+
+    destinations = [node for node in street_lights if node != origin_node]
+    shortest_paths = find_shortest_paths(routes, origin_node, destinations)
+
+    return calculate_total_hops(shortest_paths)

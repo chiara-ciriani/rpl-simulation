@@ -22,10 +22,10 @@ def run_simulations(num_simulations, tx_range, num_nodes, num_street_lights, ver
         output_lines = result.stdout.splitlines()
 
         # Obtener los resultados de los protocolos
-        rpl_operation_total_hops = int(output_lines[0].split(': ')[-1])
-        rpl_operation_second_approach_total_hops = int(output_lines[1].split(': ')[-1])
-        rpl_projected_routes_total_hops = int(output_lines[2].split(': ')[-1])
-        rpl_multicast_total_hops = int(output_lines[3].split(': ')[-1])
+        rpl_operation_total_hops = int(output_lines[0].split(': ')[-1]) if output_lines else 0
+        rpl_operation_second_approach_total_hops = int(output_lines[1].split(': ')[-1]) if output_lines else 0
+        rpl_projected_routes_total_hops = int(output_lines[2].split(': ')[-1]) if output_lines else 0
+        rpl_multicast_total_hops = int(output_lines[3].split(': ')[-1]) if output_lines else 0
 
         # Almacenar los resultados en las listas
         rpl_operation_results.append(rpl_operation_total_hops)
