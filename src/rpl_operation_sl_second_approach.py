@@ -28,9 +28,9 @@ def send_to_all_street_lights_using_rpl_root(tx_range, num_nodes, num_street_lig
     if verbose:
         print(f"Street light {origin_node.id} sending messages to all other street lights\n")
 
-    total_hops = rpl_operation_second_approach(street_lights, origin_node, verbose)
+    total_hops, hops_to_root, hops_from_root = rpl_operation_second_approach(street_lights, origin_node, verbose)
     
-    print(total_hops)
+    print(total_hops, hops_to_root, hops_from_root)
 
     # Plot the resulting DODAG
     if verbose:

@@ -90,7 +90,7 @@ class Node:
                     message.add_node_to_route(self)
                     self.forward_message_to_all(message, verbose)
                 else:
-                    self.send_message_downwards(message, verbose)
+                    self.send_message_downwards(message, verbose, 0)
             elif self.preferred_parent:
                 if verbose: print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")
 

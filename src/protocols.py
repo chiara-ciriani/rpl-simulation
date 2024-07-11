@@ -45,9 +45,12 @@ def rpl_operation_second_approach(street_lights, origin_node, verbose):
         print()
         print(f"Routes: {[[node.id if hasattr(node, 'id') else node for node in route] for route in routes]}")
 
+    total_hops_to_root = len(routes[0]) - 1
+    hops_from_root = sum(len(route) - 1 for route in routes[1:])
+
     if isinstance(routes, list) and all(isinstance(route, list) for route in routes):
-        return calculate_total_hops(routes)
-    return len(routes) - 1
+        return calculate_total_hops(routes), total_hops_to_root, hops_from_root
+    return len(routes) - 1, total_hops_to_root, hops_from_root
 
 def rpl_projected_routes(street_lights, origin_node, verbose):
     routes = []
