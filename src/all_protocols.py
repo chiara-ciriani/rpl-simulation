@@ -28,13 +28,13 @@ def send_to_all_street_lights_using_all_protocols(tx_range, num_nodes, num_stree
     if verbose:
         print(f"Street light {origin_node.id} sending messages to all other street lights\n")
 
-    rpl_operation_total_hops = rpl_operation(street_lights, origin_node, verbose)
-    rpl_operation_second_approach_total_hops = rpl_operation_second_approach(street_lights, origin_node, verbose)
+    rpl_operation_total_hops, rpl_operation_hops_to_root, rpl_operation_hops_from_root = rpl_operation(street_lights, origin_node, verbose)
+    rpl_operation_second_approach_total_hops, rpl_operation_second_approach_hops_to_root, rpl_operation_second_approach_hops_from_root = rpl_operation_second_approach(street_lights, origin_node, verbose)
     rpl_projected_routes_total_hops = rpl_projected_routes(street_lights, origin_node, verbose)
     rpl_multicast_total_hops = rpl_multicast(origin_node, street_lights, verbose)
 
-    print(f"RPL Operation: {rpl_operation_total_hops}")
-    print(f"RPL Operation Second Approach: {rpl_operation_second_approach_total_hops}")
+    print(f"RPL Operation: {rpl_operation_total_hops, rpl_operation_hops_to_root, rpl_operation_hops_from_root}")
+    print(f"RPL Operation Second Approach: {rpl_operation_second_approach_total_hops, rpl_operation_second_approach_hops_to_root, rpl_operation_second_approach_hops_from_root}")
     print(f"RPL Projected Routes: {rpl_projected_routes_total_hops}")
     print(f"RPL Multicast: {rpl_multicast_total_hops}")
 
