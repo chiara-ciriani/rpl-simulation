@@ -75,15 +75,17 @@ class Node:
             if verbose:
                 print(f"Node {self.id} updated preferred parent to Node {parent.id}")
         
-    def send_message_upwards(self, message, verbose):
+    def send_message_upwards(self, message, verbose, hops_to_root=0):
         message.add_node_to_route(self)
         if self.id == message.get_destination():
+            message.hops_to_root = hops_to_root
             if verbose: print(f"Node {self.id}: Message delivered to destination {message.get_destination()} :)")
         else:
             # Enviar mensaje hacia arriba en el DODAG (hacia el preferred parent)
             if self.is_root:
                 # Soy la raíz, proceso el mensaje aquí o lo reenvío hacia abajo
                 message.remove_node_from_route()
+                message.hops_to_root = hops_to_root
                 if message.is_rpl_second_approach_message():
                     message.add_node_to_route(self)
                     self.forward_message_to_all(message, verbose)
@@ -95,15 +97,16 @@ class Node:
                 if message.is_rpl_second_approach_message():
                     message.remove_node_if_is_a_destination(self.id)
                     if message.are_still_destinations():
-                        self.preferred_parent.send_message_upwards(message, verbose) 
+                        self.preferred_parent.send_message_upwards(message, verbose, hops_to_root + 1) 
                 else:
-                    self.preferred_parent.send_message_upwards(message, verbose)
+                    self.preferred_parent.send_message_upwards(message, verbose, hops_to_root + 1)
             else:
                 if verbose: print(f"Node {self.id}: No preferred parent set to send message upwards.")
     
-    def send_message_downwards(self, message, verbose):
+    def send_message_downwards(self, message, verbose, hops_from_root=0):
         message.add_node_to_route(self)
         if self.id == message.get_destination():
+            message.hops_from_root = hops_from_root
             if verbose: print(f"Node {self.id}: Message delivered to destination {message.get_destination()}")
         else:
             # Enviar mensaje hacia abajo en el DODAG (hacia el destino final)
@@ -111,7 +114,7 @@ class Node:
             next_hop = shortest_path[1] if len(shortest_path) > 1 else None
             if next_hop is not None:
                 if verbose: print(f"Node {self.id}: Message delivered to: {next_hop}")
-                next_hop.send_message_downwards(message, verbose)
+                next_hop.send_message_downwards(message, verbose, hops_from_root + 1)
             else:
                 if verbose: print(f"Node {self.id}: No route found to destination {message.get_destination()}")
     

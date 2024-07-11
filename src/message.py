@@ -6,6 +6,8 @@ class Message:
         self.route = []  # Lista para almacenar la ruta del mensaje
         self.multicast_route = {}
         self.multicast_origin_sent_destination = []
+        self.hops_to_root = 0
+        self.hops_from_root = 0
 
     def get_origin(self):
         return self.origin

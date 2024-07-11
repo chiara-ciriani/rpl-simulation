@@ -6,6 +6,9 @@ def calculate_total_hops(routes):
 
 def rpl_operation(street_lights, origin_node, verbose):
     routes = []
+    total_hops = 0
+    hops_to_root = 0
+    hops_from_root = 0
 
     for street_light in street_lights:
         if street_light != origin_node:
@@ -13,15 +16,20 @@ def rpl_operation(street_lights, origin_node, verbose):
             if origin_node.is_child_node(street_light.id):
                 message.add_node_to_route(origin_node)
                 message.add_node_to_route(street_light)
+                message.hops_to_root = 0
+                message.hops_from_root = 1
             else:
                 origin_node.send_message_upwards(message, verbose)
             routes.append(message.get_route())
+            total_hops += len(message.get_route()) - 1
+            hops_to_root += message.hops_to_root
+            hops_from_root += message.hops_from_root
 
     if verbose:
         print()
         print(f"Routes: {[[node.id for node in route] for route in routes]}")
 
-    return calculate_total_hops(routes)
+    return total_hops, hops_to_root, hops_from_root
 
 def rpl_operation_second_approach(street_lights, origin_node, verbose):
     # Crear una lista de todas las street lights salvo origin_node
