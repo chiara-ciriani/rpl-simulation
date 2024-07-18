@@ -379,6 +379,86 @@ def create_network_with_mpl_domain_and_tracks(env, num_nodes, num_street_lights,
     return nodes, positions
 
 
+#### MINIMUM SPANNING TREE
+
+
+def create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_range, verbose):
+    mpl_domain_address = "MPL_Domain_1"
+    mpl_domain = MPL_Domain(1, mpl_domain_address)
+
+    nodes = [Node(env, i, tx_range, verbose) for i in range(num_nodes)]
+
+    # Create a complete graph with random weights
+    G = nx.complete_graph(num_nodes)
+    for (u, v) in G.edges():
+        G.edges[u, v]['weight'] = random.uniform(1, 10)  # Assign random weights for simulation purposes
+
+    # Compute the Minimum Spanning Tree (MST)
+    T = nx.minimum_spanning_tree(G, weight='weight')
+
+    # Assign neighbors based on the MST
+    for u, v in T.edges():
+        nodes[u].neighbors.append(nodes[v])
+        nodes[v].neighbors.append(nodes[u])
+
+    # Randomly select the street lights ensuring they are part of the spanning tree
+    street_light_indices = random.sample(range(num_nodes), num_street_lights)
+    for idx in street_light_indices:
+        nodes[idx] = StreetLight(env, idx, tx_range, mpl_domain_address)
+
+    # Randomly select a root node that is not a street light
+    root_node_idx = random.choice([i for i in range(num_nodes) if i not in street_light_indices])
+    root_node = nodes[root_node_idx]
+    root_node.set_as_root(verbose)
+
+    # Assign preferred parents based on the MST structure
+    parent_map = nx.predecessor(T, root_node_idx)
+    for node in nodes:
+        if not node.is_root:
+            parent_id = parent_map[node.id][0] if parent_map[node.id] else None
+            if parent_id is not None:
+                parent_node = nodes[parent_id]
+                node.preferred_parent = parent_node
+                parent_node.children.append(node)
+                if verbose:
+                    print(f"Node {node.id} assigned preferred parent Node {node.preferred_parent.id}")
+
+    add_nodes_to_mpl_domain(mpl_domain, nodes, verbose)
+    compute_tracks(nodes, verbose)
+
+    return nodes, T
+
+def plot_network(nodes, T):
+    G = nx.Graph()
+
+    for node in nodes:
+        G.add_node(node.id)
+        for neighbor in node.neighbors:
+            G.add_edge(node.id, neighbor.id)
+
+    pos = nx.spring_layout(G)
+
+    plt.figure(figsize=(12, 8))
+    nx.draw(G, pos, with_labels=True, node_size=500, node_color='skyblue', font_size=10, font_weight='bold', edge_color='gray')
+    
+    # Highlight the MST
+    mst_edges = list(T.edges())
+    nx.draw_networkx_edges(G, pos, edgelist=mst_edges, width=2, edge_color='blue')
+
+    # Highlight the root
+    root_nodes = [node.id for node in nodes if node.is_root]
+    nx.draw_networkx_nodes(G, pos, nodelist=root_nodes, node_color='green', node_size=700)
+
+    # Highlight the street lights
+    street_light_nodes = [node.id for node in nodes if isinstance(node, StreetLight)]
+    nx.draw_networkx_nodes(G, pos, nodelist=street_light_nodes, node_color='orange', node_size=700)
+
+    plt.title("Network with MST Highlighted")
+    plt.show()
+
+#############
+
+
 def plot_basic_dodag(nodes, positions):
     street_light_label_plotted = False
     dodag_link_label_plotted = False

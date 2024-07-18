@@ -54,7 +54,7 @@ class Node:
         self.rank = 0
         # self.dodag_id = self.id  # Se utiliza la ID del nodo como ID del DODAG
         if verbose: print(f"Node {self.id} is the DODAG Root\n")
-        self.send_dio(verbose)
+        # self.send_dio(verbose)
 
     def is_dodag_root(self):
         return self.is_root
