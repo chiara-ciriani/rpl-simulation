@@ -21,6 +21,7 @@ class Node:
         # RPL MULTICAST
         self.mpl_domain = None  # MPL Domain al que pertenece el nodo
         self.received_messages = []  # Lista de mensajes recibidos
+        self.senders = []
 
         env.process(self.run(verbose))
 
@@ -32,16 +33,12 @@ class Node:
 
     def send_dio(self, verbose):
         for neighbor in self.neighbors:
-            if not neighbor.rank or neighbor.rank > self.rank:
-                neighbor.rank = self.rank + 1
-                neighbor.parent = self  # Establecer el padre del vecino como el nodo actual (self)
-                neighbor.update_preferred_parent(self, verbose)
-                if verbose: print(f"Node {self.id} sent DIO to Node {neighbor.id}, setting rank to {self.rank + 1}")
-                neighbor.receive_dio(self.rank + 1, verbose)
+            neighbor.receive_dio(self.rank, verbose)
 
     def receive_dio(self, rank, verbose):
-        if not self.rank or rank < self.rank:
-            self.rank = rank
+        new_rank = 0 ## COMPUTE RANK
+        if not self.rank or self.rank < new_rank:
+            self.rank = new_rank
             self.update_preferred_parent(self, verbose)
             if verbose: print(f"Node {self.id} received DIO, setting rank to {self.rank}")
             self.send_dio()
@@ -49,12 +46,11 @@ class Node:
     
     ## PARA ENVIO DE MENSAJES
 
-    def set_as_root(self, verbose):
+    def set_as_root(self, verbose, dio=False):
         self.is_root = True
         self.rank = 0
-        # self.dodag_id = self.id  # Se utiliza la ID del nodo como ID del DODAG
         if verbose: print(f"Node {self.id} is the DODAG Root\n")
-        # self.send_dio(verbose)
+        if dio: self.send_dio(verbose)
 
     def is_dodag_root(self):
         return self.is_root
@@ -165,11 +161,15 @@ class Node:
     
     def get_id(self):
         return self.id
+    
+    def add_sender(self, sender_id):
+        self.senders.append(sender_id)
 
     def receive_message(self, message, verbose):
         if message not in self.received_messages:
             self.received_messages.append(message)
             if verbose: print(f"Node {self.id} received message from {message.get_origin()}")
+            message.change_origin(self.id)
             self.forward_message(message, verbose)
         else:
             if verbose: print(f"Node {self.id} already received message to {message.get_destination()}")
@@ -177,7 +177,7 @@ class Node:
     def forward_message(self, message, verbose):
         for neighbor in self.neighbors:
             if neighbor.get_mpl_domain() == self.mpl_domain and neighbor != message.get_origin():
-                if self.id == message.get_origin() and message.is_destination_in_multicast_origin_sent_destination(neighbor.get_id()):
+                if (self.id == message.get_origin() and message.is_destination_in_multicast_origin_sent_destination(neighbor.get_id())) or (neighbor.get_id() == message.get_last_hop()) or (neighbor.get_id() in self.senders):
                     continue
                 else:
                     message.add_destination_to_multicast_origin_sent_destination(neighbor.get_id())
@@ -185,6 +185,8 @@ class Node:
                     message_id = self.mpl_domain.get_message_count()
                     message.add_node_to_multicast_route(message_id, self.id)
                     message.add_node_to_multicast_route(message_id, neighbor.id)
+                    message.change_last_hop(self.id)
+                    neighbor.add_sender(self.id)
                     neighbor.receive_message(message, verbose)
 
 

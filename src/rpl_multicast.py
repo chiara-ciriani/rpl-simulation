@@ -2,7 +2,7 @@ import argparse
 import random
 import simpy
 
-from network import create_network_with_mpl_domain, plot_dodag
+from network import create_network_with_spanning_tree, plot_network
 from protocols import rpl_multicast
 from street_light import StreetLight
 
@@ -10,7 +10,7 @@ def send_message_in_mpl_domain(tx_range, num_nodes, num_street_lights, verbose=F
     env = simpy.Environment()
 
     # Create the network
-    nodes, positions = create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range, verbose)
+    nodes, positions = create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_range, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Run the simulation
@@ -34,7 +34,7 @@ def send_message_in_mpl_domain(tx_range, num_nodes, num_street_lights, verbose=F
     
     # Plot the resulting DODAG
     if verbose:
-        plot_dodag(nodes, positions)
+        plot_network(nodes, positions)
 
 
 if __name__ == "__main__":

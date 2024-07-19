@@ -1,0 +1,15 @@
+Number of simulations: 100
+
+Number of nodes:  10
+Number of street lights:  2
+Standard RPL Operation:   Average hops  |  Average number of hops from origin to the Root  |  From Root to destination 
+Standard RPL Operation: 4.13, 1.83, 2.3
+
+Standard RPL Operation alternative:   Average hops  |  Average number of hops from origin to the Root  |  From Root to destination 
+Standard RPL Operation alternative: 4.43, 1.95, 2.48
+
+RPL Projected Routes:   Average hops
+RPL Projected Routes: 2.39
+
+Proposed Solution:   Average hops
+Proposed Solution: 2.39

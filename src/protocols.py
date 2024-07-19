@@ -43,10 +43,17 @@ def rpl_operation_second_approach(street_lights, origin_node, verbose):
 
     if verbose:
         print()
-        print(f"Routes: {[[node.id if hasattr(node, 'id') else node for node in route] for route in routes]}")
+        if isinstance(routes, list) and all(isinstance(route, list) for route in routes):
+            print(f"Routes: {[[node.id if hasattr(node, 'id') else node for node in route] for route in routes]}")
+        else:
+            print(f"Routes: {[node.id for node in routes]}")
 
-    total_hops_to_root = len(routes[0]) - 1
-    hops_from_root = sum(len(route) - 1 for route in routes[1:])
+    if isinstance(routes, list) and all(isinstance(route, list) for route in routes):
+        total_hops_to_root = len(routes[0]) - 1
+        hops_from_root = sum(len(route) - 1 for route in routes[1:])
+    else: 
+        total_hops_to_root = len(routes)
+        hops_from_root = 0
 
     if isinstance(routes, list) and all(isinstance(route, list) for route in routes):
         return calculate_total_hops(routes), total_hops_to_root, hops_from_root
@@ -77,7 +84,7 @@ def rpl_multicast(origin_node, street_lights, verbose):
 
     # total_message_sent = calculate_total_hops(routes)
 
-    destinations = [node for node in street_lights if node != origin_node]
-    shortest_paths = find_shortest_paths(routes, origin_node, destinations)
+    # destinations = [node for node in street_lights if node != origin_node]
+    # shortest_paths = find_shortest_paths(routes, origin_node, destinations)
 
-    return calculate_total_hops(shortest_paths)
+    return len(routes)

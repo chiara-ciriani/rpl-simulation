@@ -2,7 +2,7 @@ import argparse
 import random
 import simpy
 
-from network import create_network_with_tracks, plot_dodag
+from network import create_network_with_spanning_tree, plot_network
 from protocols import rpl_projected_routes
 from street_light import StreetLight
 
@@ -10,7 +10,7 @@ def send_to_all_street_lights_using_projected_routes(tx_range, num_nodes, num_st
     env = simpy.Environment()
     
     # Create the network
-    nodes, positions = create_network_with_tracks(env, num_nodes, num_street_lights, tx_range, verbose)
+    nodes, positions = create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_range, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Run the simulation
@@ -34,7 +34,7 @@ def send_to_all_street_lights_using_projected_routes(tx_range, num_nodes, num_st
 
     # Plot the resulting DODAG
     if verbose:
-        plot_dodag(nodes, positions)
+        plot_network(nodes, positions)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")

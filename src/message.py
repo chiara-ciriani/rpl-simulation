@@ -8,6 +8,7 @@ class Message:
         self.multicast_origin_sent_destination = []
         self.hops_to_root = 0
         self.hops_from_root = 0
+        self.last_hop = None
 
     def get_origin(self):
         return self.origin
@@ -62,6 +63,15 @@ class Message:
 
     def are_still_destinations(self):
         return len(self.destination)
+    
+    def get_last_hop(self):
+        return self.last_hop
+    
+    def change_last_hop(self, new_last_hop):
+        self.last_hop = new_last_hop
+
+    def change_origin(self, new_origin):
+        self.origin = new_origin
 
     def __eq__(self, other):
         return self.origin == other.origin and self.destination == other.destination and self.data == other.data

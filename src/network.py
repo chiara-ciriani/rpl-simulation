@@ -49,22 +49,22 @@ def find_random_node_within_distance(nodes, indices, positions, max_distance):
     return random.choice(potential_nodes) if potential_nodes else None
 
 
-def add_nodes_to_mpl_domain(mpl_domain, nodes, verbose):
+def add_nodes_to_mpl_domain(mpl_domain, nodes, T, verbose):
     # Add street lights and necessary relay nodes to MPL Domain
-    for street_light in [node for node in nodes if isinstance(node, StreetLight)]:
+    street_lights = [node for node in nodes if isinstance(node, StreetLight)]
+    
+    for street_light in street_lights:
         mpl_domain.add_node(street_light, verbose)
 
     # Ensure all street lights can communicate within the MPL Domain
-    for street_light in [node for node in nodes if isinstance(node, StreetLight)]:
-        for other_node in nodes:
-            if street_light != other_node and other_node not in mpl_domain.nodes:
-                shortest_path = street_light.compute_shortest_path_to_destination(other_node.id)
-                if shortest_path:
-                    for path_node in shortest_path:
-                        mpl_domain.add_node(path_node, verbose)
+    for i in range(len(street_lights)):
+        for j in range(i + 1, len(street_lights)):
+            path = nx.shortest_path(T, source=street_lights[i].id, target=street_lights[j].id)
+            for node_id in path:
+                mpl_domain.add_node(nodes[node_id], verbose)
 
     if verbose:
-        print(f"MPL Domain: {mpl_domain}")
+        print(f"MPL Domain: {[node.id for node in mpl_domain.nodes]}")
 
 
 def create_network_with_mpl_domain(env, num_nodes, num_street_lights, tx_range, verbose):
@@ -388,6 +388,11 @@ def create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_rang
 
     nodes = [Node(env, i, tx_range, verbose) for i in range(num_nodes)]
 
+    # Randomly select the street lights ensuring they are part of the spanning tree
+    street_light_indices = random.sample(range(num_nodes), num_street_lights)
+    for idx in street_light_indices:
+        nodes[idx] = StreetLight(env, idx, tx_range, mpl_domain_address)
+
     # Create a complete graph with random weights
     G = nx.complete_graph(num_nodes)
     for (u, v) in G.edges():
@@ -400,11 +405,6 @@ def create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_rang
     for u, v in T.edges():
         nodes[u].neighbors.append(nodes[v])
         nodes[v].neighbors.append(nodes[u])
-
-    # Randomly select the street lights ensuring they are part of the spanning tree
-    street_light_indices = random.sample(range(num_nodes), num_street_lights)
-    for idx in street_light_indices:
-        nodes[idx] = StreetLight(env, idx, tx_range, mpl_domain_address)
 
     # Randomly select a root node that is not a street light
     root_node_idx = random.choice([i for i in range(num_nodes) if i not in street_light_indices])
@@ -423,7 +423,7 @@ def create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_rang
                 if verbose:
                     print(f"Node {node.id} assigned preferred parent Node {node.preferred_parent.id}")
 
-    add_nodes_to_mpl_domain(mpl_domain, nodes, verbose)
+    add_nodes_to_mpl_domain(mpl_domain, nodes, T, verbose)
     compute_tracks(nodes, verbose)
 
     return nodes, T
@@ -456,7 +456,40 @@ def plot_network(nodes, T):
     plt.title("Network with MST Highlighted")
     plt.show()
 
-#############
+############# WITH DIO
+
+def create_network(env, num_nodes, num_street_lights, tx_range, verbose):
+    mpl_domain_address = "MPL_Domain_1"
+    mpl_domain = MPL_Domain(1, mpl_domain_address)
+
+    nodes = [Node(env, i, tx_range) for i in range(num_nodes)]
+    
+    # Randomly place nodes in a 2D space and find neighbors within tx_range
+    positions = {node.id: (random.uniform(0, 70), random.uniform(0, 70)) for node in nodes}
+    for node in nodes:
+        node_pos = positions[node.id]
+        for other_node in nodes:
+            if other_node.id != node.id:
+                other_pos = positions[other_node.id]
+                distance = ((node_pos[0] - other_pos[0]) ** 2 + (node_pos[1] - other_pos[1]) ** 2) ** 0.5
+                if distance <= node.tx_range:
+                    node.neighbors.append(other_node)
+    
+    # Randomly select the street lights ensuring they are part of the spanning tree
+    street_light_indices = random.sample(range(num_nodes), num_street_lights)
+    for idx in street_light_indices:
+        nodes[idx] = StreetLight(env, idx, tx_range, mpl_domain_address)
+
+    # Randomly select a root node that is not a street light
+    root_node_idx = random.choice([i for i in range(num_nodes) if i not in street_light_indices])
+    root_node = nodes[root_node_idx]
+    root_node.set_as_root(verbose, True)
+
+    return nodes
+
+
+
+##########
 
 
 def plot_basic_dodag(nodes, positions):
