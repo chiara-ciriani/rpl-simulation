@@ -458,7 +458,7 @@ def plot_network(nodes, T):
 
 ############# WITH DIO
 
-def create_network(env, num_nodes, num_street_lights, tx_range, verbose):
+def create_network(env, num_nodes, num_street_lights, tx_range, etx, verbose):
     mpl_domain_address = "MPL_Domain_1"
     mpl_domain = MPL_Domain(1, mpl_domain_address)
 
@@ -483,7 +483,11 @@ def create_network(env, num_nodes, num_street_lights, tx_range, verbose):
     # Randomly select a root node that is not a street light
     root_node_idx = random.choice([i for i in range(num_nodes) if i not in street_light_indices])
     root_node = nodes[root_node_idx]
-    root_node.set_as_root(verbose, True)
+    root_node.set_as_root(verbose, True, etx)
+
+    # no funciona esta funcion en este approach
+    # add_nodes_to_mpl_domain(mpl_domain, nodes, T, verbose)
+    compute_tracks(nodes, verbose)
 
     return nodes
 

@@ -1,5 +1,6 @@
 import random
 from message import Message
+from constants import RANK_FACTOR, STRETCH_OF_RANK, MIN_HOP_RANK_INCREASE
 
 class Node:
     def __init__(self, env, id, tx_range, verbose=False):
@@ -31,26 +32,27 @@ class Node:
             if self.rank:
                 self.send_dio(verbose)
 
-    def send_dio(self, verbose):
+    def send_dio(self, verbose, etx=None):
         for neighbor in self.neighbors:
-            neighbor.receive_dio(self.rank, verbose)
+            neighbor.receive_dio(self, verbose, etx)
 
-    def receive_dio(self, rank, verbose):
-        new_rank = 0 ## COMPUTE RANK
-        if not self.rank or self.rank < new_rank:
+    def receive_dio(self, parent, verbose, etx=None):
+        step_of_rank = calculate_step_of_rank(etx)
+        rank_increase = (RANK_FACTOR + step_of_rank + STRETCH_OF_RANK) * MIN_HOP_RANK_INCREASE
+        new_rank = parent.rank + rank_increase
+        if not self.rank or self.rank > new_rank:
             self.rank = new_rank
-            self.update_preferred_parent(self, verbose)
+            self.update_preferred_parent(parent, verbose) 
             if verbose: print(f"Node {self.id} received DIO, setting rank to {self.rank}")
             self.send_dio()
 
-    
     ## PARA ENVIO DE MENSAJES
 
-    def set_as_root(self, verbose, dio=False):
+    def set_as_root(self, verbose, etx=None, dio=False):
         self.is_root = True
-        self.rank = 0
+        self.rank = 256
         if verbose: print(f"Node {self.id} is the DODAG Root\n")
-        if dio: self.send_dio(verbose)
+        if dio: self.send_dio(etx, verbose)
 
     def is_dodag_root(self):
         return self.is_root
@@ -63,13 +65,12 @@ class Node:
         self.preferred_parent = parent
 
     def update_preferred_parent(self, parent, verbose):
-        if self.preferred_parent is None or parent.rank < self.preferred_parent.rank:
-            if self.preferred_parent:
-                self.preferred_parent.children.remove(self)
-            self.preferred_parent = parent
-            parent.children.append(self)
-            if verbose:
-                print(f"Node {self.id} updated preferred parent to Node {parent.id}")
+        if self.preferred_parent:
+            self.preferred_parent.children.remove(self)
+        self.preferred_parent = parent
+        parent.children.append(self)
+        if verbose:
+            print(f"Node {self.id} updated preferred parent to Node {parent.id}")
         
     def send_message_upwards(self, message, verbose, hops_to_root=0):
         message.add_node_to_route(self)
@@ -207,3 +208,7 @@ class Node:
 
     def __str__(self):
         return f"Node {self.id}"
+    
+
+def calculate_step_of_rank(etx):
+    return 100/etx
