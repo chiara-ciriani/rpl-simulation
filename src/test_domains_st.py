@@ -7,7 +7,7 @@ from street_light import StreetLight
 
 from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approach, rpl_projected_routes
 
-from creating_domains import compute_tracks, create_network_with_spanning_tree, plot_network, add_nodes_to_mpl_domain_disjoint_path, add_street_light_to_mpl_domain
+from creating_domains_st import compute_tracks, create_network_with_spanning_tree, plot_network, add_nodes_to_mpl_domain_disjoint_path, add_street_light_to_mpl_domain
 
 def send_to_all_street_lights(num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
     env = simpy.Environment()
@@ -20,7 +20,7 @@ def send_to_all_street_lights(num_nodes, num_street_lights, tx_range, max_distan
 
     mpl_domain_address_1 = "MPL_Domain_1"
     mpl_domain_1 = MPL_Domain(1, mpl_domain_address_1)
-    add_nodes_to_mpl_domain_disjoint_path(mpl_domain_1, nodes, T, verbose)
+    add_nodes_to_mpl_domain_disjoint_path(mpl_domain_1, nodes, verbose)
 
     mpl_domain_address_2 = "MPL_Domain_2"
     mpl_domain_2 = MPL_Domain(2, mpl_domain_address_2)
@@ -85,5 +85,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     send_to_all_street_lights(args.num_nodes, args.num_street_lights, args.tx_range, MAX_DISTANCE, args.verbose)
-
-

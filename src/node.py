@@ -146,11 +146,13 @@ class Node:
         # Caso en que la street_light destination sea hijo directo: no hace falta ir a la raiz
         remaining_destinations = []
         for street_light in street_lights:
+            is_remaining_destination = True
             for child in self.children:
                 if child.id == street_light:
                     # Si el destino es un hijo directo
                     routes.append([self.id, street_light])
-            else:
+                    is_remaining_destination = False
+            if is_remaining_destination:
                 # Agregar a los destinos restantes que deben enviarse a través de la raíz
                 remaining_destinations.append(street_light)
 

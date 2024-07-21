@@ -29,7 +29,7 @@ def compute_tracks(nodes, verbose):
         street_light.install_track(track, verbose)
 
 # Función para agregar nodos al dominio MPL
-def add_nodes_to_mpl_domain_disjoint_path(mpl_domain, nodes, T, verbose):
+def add_nodes_to_mpl_domain_disjoint_path(mpl_domain, nodes, verbose):
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Función para agregar nodos al dominio MPL
@@ -166,7 +166,7 @@ def plot_network(nodes, T, mpl_domain_1, mpl_domain_2):
     node_sizes = []
 
     for node in nodes:
-        if node.is_root:
+        if node.is_dodag_root():
             node_colors.append('red')  # Raíz en rojo
             node_sizes.append(700)
         elif isinstance(node, StreetLight):
