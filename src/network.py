@@ -49,6 +49,23 @@ def find_random_node_within_distance(nodes, indices, positions, max_distance):
     return random.choice(potential_nodes) if potential_nodes else None
 
 
+def add_nodes_to_mpl_domain_dio(mpl_domain, nodes, verbose):
+    # Add street lights and necessary relay nodes to MPL Domain
+    for street_light in [node for node in nodes if isinstance(node, StreetLight)]:
+        mpl_domain.add_node(street_light, verbose)
+
+    # Ensure all street lights can communicate within the MPL Domain
+    for street_light in [node for node in nodes if isinstance(node, StreetLight)]:
+        for other_node in nodes:
+            if street_light != other_node and other_node not in mpl_domain.nodes:
+                shortest_path = street_light.compute_shortest_path_to_destination(other_node.id)
+                if shortest_path:
+                    for path_node in shortest_path:
+                        mpl_domain.add_node(path_node, verbose)
+
+    if verbose:
+        print(f"MPL Domain: {mpl_domain}")
+
 def add_nodes_to_mpl_domain(mpl_domain, nodes, T, verbose):
     # Add street lights and necessary relay nodes to MPL Domain
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
@@ -458,7 +475,8 @@ def plot_network(nodes, T):
 
 ############# WITH DIO
 
-def create_network(env, num_nodes, num_street_lights, tx_range, etx, verbose):
+def create_network_with_dio(env, num_nodes, num_street_lights, tx_range, etx, verbose):
+    print("ETX 2: ", etx)
     mpl_domain_address = "MPL_Domain_1"
     mpl_domain = MPL_Domain(1, mpl_domain_address)
 
@@ -483,13 +501,24 @@ def create_network(env, num_nodes, num_street_lights, tx_range, etx, verbose):
     # Randomly select a root node that is not a street light
     root_node_idx = random.choice([i for i in range(num_nodes) if i not in street_light_indices])
     root_node = nodes[root_node_idx]
-    root_node.set_as_root(verbose, True, etx)
+    root_node.set_as_root(verbose, etx, True)
 
-    # no funciona esta funcion en este approach
-    # add_nodes_to_mpl_domain(mpl_domain, nodes, T, verbose)
+    add_nodes_to_mpl_domain_dio(mpl_domain, nodes, verbose)
     compute_tracks(nodes, verbose)
 
-    return nodes
+    # Use NetworkX spring layout for better node positioning
+    G = nx.Graph()
+    for node in nodes:
+        G.add_node(node.id)
+        for neighbor in node.neighbors:
+            G.add_edge(node.id, neighbor.id)
+
+    pos = nx.spring_layout(G)
+
+    # Convert NetworkX positions to a dictionary compatible with plot_dodag
+    positions = {node_id: pos[node_id] for node_id in pos}
+
+    return nodes, positions
 
 
 

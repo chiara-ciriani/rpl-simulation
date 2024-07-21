@@ -3,14 +3,14 @@ import random
 import simpy
 
 from all_protocols import rpl_operation
-from network import create_network_with_spanning_tree, plot_network
+from network import create_network_with_dio, create_network_with_spanning_tree, plot_dodag, plot_network
 from street_light import StreetLight
 
 def send_to_all_street_lights_using_rpl_operation(tx_range, num_nodes, num_street_lights, verbose=False):
     env = simpy.Environment()
 
     # Create the network
-    nodes, positions = create_network_with_spanning_tree(env, num_nodes, num_street_lights, tx_range, verbose)
+    nodes, positions = create_network_with_dio(env, num_nodes, num_street_lights, tx_range, 75, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Run the simulation
@@ -34,7 +34,7 @@ def send_to_all_street_lights_using_rpl_operation(tx_range, num_nodes, num_stree
 
     # Plot the resulting DODAG
     if verbose:
-        plot_network(nodes, positions)
+        plot_dodag(nodes, positions)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")

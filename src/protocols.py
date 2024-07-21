@@ -73,8 +73,8 @@ def rpl_projected_routes(street_lights, origin_node, verbose):
 
     return calculate_total_hops(routes)
 
-def rpl_multicast(origin_node, street_lights, verbose):
-    message = origin_node.send_movement_alert(verbose)
+def rpl_multicast(origin_node, domain_address, verbose):
+    message = origin_node.send_movement_alert(domain_address, verbose)
 
     routes = message.get_multicast_route()
 

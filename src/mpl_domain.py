@@ -1,3 +1,5 @@
+from street_light import StreetLight
+
 class MPL_Domain:
     def __init__(self, id, mpl_domain_address):
         self.id = id
@@ -9,6 +11,9 @@ class MPL_Domain:
         if node not in self.nodes:
             self.nodes.append(node)
             node.mpl_domain = self
+
+            node.add_mpl_domain(self.mpl_domain_address)
+
             if verbose: print(f"Node {node.id} added to MPL Domain {self.id}")
 
     def get_message_count(self):

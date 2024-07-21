@@ -3,10 +3,13 @@ from message import Message
 from constants import RANK_FACTOR, STRETCH_OF_RANK, MIN_HOP_RANK_INCREASE
 
 class Node:
-    def __init__(self, env, id, tx_range, verbose=False):
+    def __init__(self, env, id, x, y, tx_range, verbose=False):
         self.env = env
         self.id = id
+
         self.tx_range = tx_range  # Transmission range to find neighbors
+        self.x = x
+        self.y = y
 
         self.neighbors = []
         self.children = [] 
@@ -20,7 +23,8 @@ class Node:
         self.preferred_parent = None
 
         # RPL MULTICAST
-        self.mpl_domain = None  # MPL Domain al que pertenece el nodo
+        self.mpl_domain_1 = None  # MPL Domain al que pertenece el nodo
+        self.mpl_domain_2 = None
         self.received_messages = []  # Lista de mensajes recibidos
         self.senders = []
 
@@ -29,8 +33,8 @@ class Node:
     def run(self, verbose):
         while True:
             yield self.env.timeout(random.uniform(1, 3))
-            if self.rank:
-                self.send_dio(verbose)
+            # if self.rank:
+            #     self.send_dio(verbose)
 
     def send_dio(self, verbose, etx=None):
         for neighbor in self.neighbors:
@@ -44,15 +48,16 @@ class Node:
             self.rank = new_rank
             self.update_preferred_parent(parent, verbose) 
             if verbose: print(f"Node {self.id} received DIO, setting rank to {self.rank}")
-            self.send_dio()
+            self.send_dio(verbose, etx)
 
     ## PARA ENVIO DE MENSAJES
 
     def set_as_root(self, verbose, etx=None, dio=False):
+        print("ETX 3: ", etx)
         self.is_root = True
         self.rank = 256
         if verbose: print(f"Node {self.id} is the DODAG Root\n")
-        if dio: self.send_dio(etx, verbose)
+        if dio: self.send_dio(verbose, etx)
 
     def is_dodag_root(self):
         return self.is_root
@@ -76,7 +81,7 @@ class Node:
         message.add_node_to_route(self)
         if self.id == message.get_destination():
             message.hops_to_root = hops_to_root
-            if verbose: print(f"Node {self.id}: Message delivered to destination {message.get_destination()} :)")
+            # if verbose: print(f"Node {self.id}: Message delivered to destination {message.get_destination()} :)")
         else:
             # Enviar mensaje hacia arriba en el DODAG (hacia el preferred parent)
             if self.is_root:
@@ -89,7 +94,7 @@ class Node:
                 else:
                     self.send_message_downwards(message, verbose, 0)
             elif self.preferred_parent:
-                if verbose: print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")
+                # if verbose: print(f"Node {self.id}: Message delivered to parent {self.preferred_parent}")
 
                 if message.is_rpl_second_approach_message():
                     message.remove_node_if_is_a_destination(self.id)
@@ -104,13 +109,13 @@ class Node:
         message.add_node_to_route(self)
         if self.id == message.get_destination():
             message.hops_from_root = hops_from_root
-            if verbose: print(f"Node {self.id}: Message delivered to destination {message.get_destination()}")
+            # if verbose: print(f"Node {self.id}: Message delivered to destination {message.get_destination()}")
         else:
             # Enviar mensaje hacia abajo en el DODAG (hacia el destino final)
             shortest_path = self.compute_shortest_path_to_destination(message.get_destination())
             next_hop = shortest_path[1] if len(shortest_path) > 1 else None
             if next_hop is not None:
-                if verbose: print(f"Node {self.id}: Message delivered to: {next_hop}")
+                # if verbose: print(f"Node {self.id}: Message delivered to: {next_hop}")
                 next_hop.send_message_downwards(message, verbose, hops_from_root + 1)
             else:
                 if verbose: print(f"Node {self.id}: No route found to destination {message.get_destination()}")
@@ -155,29 +160,35 @@ class Node:
             routes.append(new_message.get_route())
         message.add_routes_to_message([message.get_route()] + routes)
 
+    def get_id(self):
+        return self.id
+
     # RPL MULTICAST
 
     def get_mpl_domain(self):
-        return self.mpl_domain
+        return [self.mpl_domain_1, self.mpl_domain_2]
     
-    def get_id(self):
-        return self.id
-    
+    def add_mpl_domain(self, mpl_domain):
+        if not self.mpl_domain_1:
+            self.mpl_domain_1 = mpl_domain
+        else:
+            self.mpl_domain_2 = mpl_domain
+
     def add_sender(self, sender_id):
         self.senders.append(sender_id)
 
-    def receive_message(self, message, verbose):
+    def receive_message(self, message, domain_address, verbose):
         if message not in self.received_messages:
             self.received_messages.append(message)
-            if verbose: print(f"Node {self.id} received message from {message.get_origin()}")
+            # if verbose: print(f"Node {self.id} received message from {message.get_origin()}")
             message.change_origin(self.id)
-            self.forward_message(message, verbose)
-        else:
-            if verbose: print(f"Node {self.id} already received message to {message.get_destination()}")
+            self.forward_message(message, domain_address, verbose)
+        # else:
+            # if verbose: print(f"Node {self.id} already received message to {message.get_destination()}")
 
-    def forward_message(self, message, verbose):
+    def forward_message(self, message, domain_address, verbose):
         for neighbor in self.neighbors:
-            if neighbor.get_mpl_domain() == self.mpl_domain and neighbor != message.get_origin():
+            if message.get_destination() in neighbor.get_mpl_domain() and neighbor != message.get_origin():
                 if (self.id == message.get_origin() and message.is_destination_in_multicast_origin_sent_destination(neighbor.get_id())) or (neighbor.get_id() == message.get_last_hop()) or (neighbor.get_id() in self.senders):
                     continue
                 else:
@@ -188,7 +199,7 @@ class Node:
                     message.add_node_to_multicast_route(message_id, neighbor.id)
                     message.change_last_hop(self.id)
                     neighbor.add_sender(self.id)
-                    neighbor.receive_message(message, verbose)
+                    neighbor.receive_message(message, domain_address, verbose)
 
 
     # PRINTING AND DEBUGGING
@@ -202,7 +213,8 @@ class Node:
         print(f"Parent: {self.parent.id if self.parent else None}")
         print(f"Preferred parent: {self.preferred_parent.id if self.preferred_parent else None}")
         print(f"Rank: {self.rank}")
-        print(f"MPL Domain: {self.mpl_domain.id if self.mpl_domain else None}")
+        print(f"MPL Domain 1: {self.mpl_domain_1}")
+        print(f"MPL Domain 2: {self.mpl_domain_2}")
         print(f"Received Messages: {[(msg.get_origin(), msg.get_destination()) for msg in self.received_messages]}")
         print()
 

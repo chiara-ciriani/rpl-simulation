@@ -3,7 +3,7 @@ import random
 import simpy
 
 from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approach, rpl_projected_routes
-from network import create_network_with_mpl_domain, create_network_with_spanning_tree, plot_dodag, plot_network
+from network import create_network_with_spanning_tree, plot_network
 from street_light import StreetLight
 
 def send_to_all_street_lights(tx_range, num_nodes, num_street_lights, verbose=False):
