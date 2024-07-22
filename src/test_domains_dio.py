@@ -34,7 +34,8 @@ def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_ra
     results = {}
 
     for street_light in street_lights:
-        street_light.print_node_details()
+        if verbose:
+            street_light.print_node_details()
 
         origin_node = street_light
         if verbose:
@@ -55,21 +56,26 @@ def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_ra
             node.received_messages = []
             node.senders = []
 
-        print(f"Standard RPL Operation: {total_hops_rpl}, {hops_to_root_rpl}, {hops_from_root_rpl}")
-        print(f"Standard RPL Operation alternative: {total_hops_rpl_second}, {hops_to_root_rpl_second}, {hops_from_root_rpl_second}")
-        print(f"RPL Projected Routes: {total_hops_projected_routes}")
-        print(f"Proposed Solution with Domain 1: {total_hops_domain1}")
-        print(f"Proposed Solution with Domain 2: {total_hops_domain2}\n")
- 
-        print("")
+        if verbose:
+            print(f"Standard RPL Operation: {total_hops_rpl}, {hops_to_root_rpl}, {hops_from_root_rpl}")
+            print(f"Standard RPL Operation alternative: {total_hops_rpl_second}, {hops_to_root_rpl_second}, {hops_from_root_rpl_second}")
+            print(f"RPL Projected Routes: {total_hops_projected_routes}")
+            print(f"Proposed Solution with Domain 1: {total_hops_domain1}")
+            print(f"Proposed Solution with Domain 2: {total_hops_domain2}\n")
+    
+            print("")
 
         results[street_light.get_id()] = [total_hops_rpl, total_hops_rpl_second, total_hops_projected_routes, total_hops_domain1, total_hops_domain2]
 
-    print(results)
-    print((f"Root position: {root.x}, {root.y}"))
+    if verbose:
+        print(results)
+        print((f"Root position: {root.x}, {root.y}"))
 
-    # Visualizar la red
-    plot_network(nodes, mpl_domain_1, mpl_domain_2)
+        # Visualizar la red
+        plot_network(nodes, mpl_domain_1, mpl_domain_2)
+
+    root_position = (root.x, root.y)
+    return results, root_position
 
 
 MAX_DISTANCE = 10  # Distancia máxima entre street lights
@@ -78,10 +84,10 @@ ETX = 75
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
     parser.add_argument('--tx_range', type=int, default=10, help='Transmission range for each node')
-    parser.add_argument('--width', type=int, default=20, help='Width of the network')
-    parser.add_argument('--height', type=int, default=20, help='Height of the network')
-    parser.add_argument('--num_nodes', type=int, default=10, help='Total number of nodes in the network')
-    parser.add_argument('--num_street_lights', type=int, default=2, help='Number of street lights')
+    parser.add_argument('--width', type=int, default=30, help='Width of the network')
+    parser.add_argument('--height', type=int, default=30, help='Height of the network')
+    parser.add_argument('--num_nodes', type=int, default=20, help='Total number of nodes in the network')
+    parser.add_argument('--num_street_lights', type=int, default=3, help='Number of street lights')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     args = parser.parse_args()

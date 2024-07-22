@@ -53,7 +53,6 @@ class Node:
     ## PARA ENVIO DE MENSAJES
 
     def set_as_root(self, verbose, etx=None, dio=False):
-        print("ETX 3: ", etx)
         self.is_root = True
         self.rank = 256
         if verbose: print(f"Node {self.id} is the DODAG Root\n")
