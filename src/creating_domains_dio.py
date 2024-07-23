@@ -78,7 +78,7 @@ def add_street_light_to_mpl_domain(mpl_domain, nodes, verbose):
 
 
 
-def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, etx, verbose):
+def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose):
     # Inicializar el terreno y las posiciones de los nodos
     nodes = []
     
@@ -104,12 +104,14 @@ def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx
             if node != other_node:
                 dist = math.sqrt((node.x - other_node.x) ** 2 + (node.y - other_node.y) ** 2)
                 if dist <= tx_range:
-                    node.neighbors.append(other_node)
+                    link_quality = random.uniform(0.5, 0.95)  # Random link quality between 0.5 and 0.95
+                    node.add_neighbor(other_node, link_quality)
+                    other_node.add_neighbor(node, link_quality) 
 
     # Randomly select a root node that is not a street light
     root_node_idx = random.choice([node.id for node in nodes if not isinstance(node, StreetLight)])
     root_node = nodes[root_node_idx]
-    root_node.set_as_root(verbose, etx, True)
+    root_node.set_as_root(verbose, True)
 
     return nodes, root_node
 
@@ -147,15 +149,20 @@ def plot_network(nodes, mpl_domain_1, mpl_domain_2):
     for node in nodes:
         if node.preferred_parent:
             G.add_edge(node.preferred_parent.id, node.id)
-
-    nx.draw(G, pos, labels=labels, with_labels=True, node_size=node_sizes, node_color=node_colors, font_size=10, font_weight='bold')
     
-    # Dibujar enlaces de vecinos basados en el rango de transmisión en color diferente
+    # Add neighbor links with link quality as color intensity and annotate with link quality numbers
     for node in nodes:
         for neighbor in node.neighbors:
             if not G.has_edge(node.id, neighbor.id):
-                plt.plot([node.x, neighbor.x], [node.y, neighbor.y], 'c--', alpha=0.5)  # Enlaces de vecinos en cian discontinuo
+                link_quality = node.get_link_quality(neighbor)
+                intensity = 1 - link_quality  # Higher quality means darker color
+                plt.plot([node.x, neighbor.x], [node.y, neighbor.y], color=(1, 0, 0, intensity), linestyle='--', alpha=0.5)
+                mid_x = (node.x + neighbor.x) / 2
+                mid_y = (node.y + neighbor.y) / 2
+                plt.text(mid_x, mid_y, f'{link_quality:.2f}', fontsize=9, ha='center', va='center', color='black')
     
-    plt.title("Network Topology with DODAG")
+    nx.draw(G, pos, labels=labels, with_labels=True, node_size=node_sizes, node_color=node_colors, font_size=10, font_weight='bold')
+
+    plt.title("Network Topology with DODAG and Link Quality")
     plt.show()
 

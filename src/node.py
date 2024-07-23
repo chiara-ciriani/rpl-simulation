@@ -14,6 +14,8 @@ class Node:
         self.neighbors = []
         self.children = [] 
 
+        self.link_quality = {}  # Dictionary to store link quality for each neighbor
+
         ## PARA ENVIO DE MENSAJES
 
         self.is_root = False  # Indica si soy la raíz del DODAG
@@ -36,11 +38,12 @@ class Node:
             # if self.rank:
             #     self.send_dio(verbose)
 
-    def send_dio(self, verbose, etx=None):
+    def send_dio(self, verbose):
         for neighbor in self.neighbors:
+            etx = self.calculate_etx(neighbor)
             neighbor.receive_dio(self, verbose, etx)
 
-    def receive_dio(self, parent, verbose, etx=None):
+    def receive_dio(self, parent, verbose, etx):
         step_of_rank = calculate_step_of_rank(etx)
         rank_increase = (RANK_FACTOR + step_of_rank + STRETCH_OF_RANK) * MIN_HOP_RANK_INCREASE
         new_rank = parent.rank + rank_increase
@@ -48,18 +51,33 @@ class Node:
             self.rank = new_rank
             self.update_preferred_parent(parent, verbose) 
             if verbose: print(f"Node {self.id} received DIO, setting rank to {self.rank}")
-            self.send_dio(verbose, etx)
+            self.send_dio(verbose)
 
-    ## PARA ENVIO DE MENSAJES
+    ## ROOT
 
-    def set_as_root(self, verbose, etx=None, dio=False):
+    def set_as_root(self, verbose, dio=False):
         self.is_root = True
         self.rank = 256
         if verbose: print(f"Node {self.id} is the DODAG Root\n")
-        if dio: self.send_dio(verbose, etx)
+        if dio: self.send_dio(verbose)
 
     def is_dodag_root(self):
         return self.is_root
+    
+    # LINK QUALITY
+
+    def add_neighbor(self, neighbor, link_quality):
+        self.neighbors.append(neighbor)
+        self.link_quality[neighbor] = link_quality
+
+    def get_link_quality(self, neighbor):
+        return self.link_quality.get(neighbor, 1.0)  # Default link quality is 1.0
+
+    def calculate_etx(self, neighbor):
+        link_quality = self.get_link_quality(neighbor)
+        return 1 / link_quality
+    
+    ## PARA ENVIO DE MENSAJES
     
     def is_child_node(self, id):
         # Verifica si el ID proporcionado pertenece a algún hijo

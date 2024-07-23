@@ -8,11 +8,11 @@ from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approac
 
 from creating_domains_dio import compute_tracks, create_network_with_dio, plot_network, add_nodes_to_mpl_domain_disjoint_path, add_street_light_to_mpl_domain
 
-def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_range, max_distance, etx, verbose=False):
+def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
     env = simpy.Environment()
 
     # Crear la red y el árbol de expansión mínima
-    nodes, root = create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, etx, verbose)
+    nodes, root = create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
     # Agregar nodos al dominio MPL
@@ -79,7 +79,6 @@ def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_ra
 
 
 MAX_DISTANCE = 10  # Distancia máxima entre street lights
-ETX = 75
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
@@ -92,6 +91,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    send_to_all_street_lights(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, MAX_DISTANCE, ETX, args.verbose)
+    send_to_all_street_lights(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, MAX_DISTANCE, args.verbose)
 
 

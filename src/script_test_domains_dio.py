@@ -14,7 +14,7 @@ etx = 75
 all_results = []
 
 for _ in range(500):
-    results, root_position = send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_range, max_distance, etx, False)
+    results, root_position = send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_range, max_distance, False)
     all_results.append((results, root_position))
 
 # AGREGAR TAMBIEN MISMO GRAFICO QUE ANTESSS
