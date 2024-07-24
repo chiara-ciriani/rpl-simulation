@@ -3,8 +3,8 @@ class Message:
         self.origin = origin
         self.destination = destination
         self.data = data
-        self.route = []  # Lista para almacenar la ruta del mensaje
-        self.multicast_route = {}
+        self.route = []  # List to store the message route
+        self.multicast_route = []  # List of tuples to store the multicast route
         self.multicast_origin_sent_destination = []
         self.hops_to_root = 0
         self.hops_from_root = 0
@@ -34,16 +34,15 @@ class Message:
             # Si self.route es una lista simple
             print(f"Route: {[node.id for node in self.route]}")
 
-    def add_node_to_multicast_route(self, id, node):
-        current_route = self.multicast_route.get(id, []) 
-        current_route.append(node)
-        self.multicast_route[id] = current_route
+    def add_node_to_multicast_route(self, node1, node2):
+        pair = tuple(sorted([node1, node2]))
+        if pair not in self.multicast_route:
+            self.multicast_route.append(pair)
 
     def get_multicast_route(self):
-        result = []
-        for route in self.multicast_route.values():
-            result.append(route)
-        return result
+        unique_routes_set = set(self.multicast_route)
+        unique_routes_array = [list(pair) for pair in unique_routes_set]
+        return unique_routes_array
     
     def add_destination_to_multicast_origin_sent_destination(self, destination_id):
         self.multicast_origin_sent_destination.append(destination_id)

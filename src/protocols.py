@@ -75,7 +75,8 @@ def rpl_projected_routes(street_lights, origin_node, verbose):
     for street_light in street_lights:
         if street_light != origin_node:
             route = origin_node.send_message_through_track(street_light.id)
-            routes.append(route)
+            if route:
+                routes.extend(route)
 
     if verbose:
         print()
@@ -88,18 +89,13 @@ def rpl_multicast(origin_node, domain_address, verbose):
 
     routes = message.get_multicast_route()
 
-    unique_routes_set = set(tuple(sorted(pair)) for pair in routes)
-
-    # Convertir de nuevo a lista de listas
-    unique_routes_array = [list(pair) for pair in unique_routes_set]
-
     if verbose:
         print()
-        print(f"Routes: {unique_routes_array}")
+        print(f"Routes: {routes}")
 
     # total_message_sent = calculate_total_hops(routes)
 
     # destinations = [node for node in street_lights if node != origin_node]
     # shortest_paths = find_shortest_paths(routes, origin_node, destinations)
 
-    return len(unique_routes_array)
+    return len(routes)

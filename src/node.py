@@ -213,12 +213,12 @@ class Node:
                 else:
                     message.add_destination_to_multicast_origin_sent_destination(neighbor.get_id())
                     self.mpl_domain.increase_message_count()
-                    message_id = self.mpl_domain.get_message_count()
-                    message.add_node_to_multicast_route(message_id, self.id)
-                    message.add_node_to_multicast_route(message_id, neighbor.id)
+                    message.add_node_to_multicast_route(self.id, neighbor.id)
                     message.change_last_hop(self.id)
                     neighbor.add_sender(self.id)
                     neighbor.receive_message(message, domain_address, verbose)
+
+
 
 
     # PRINTING AND DEBUGGING
