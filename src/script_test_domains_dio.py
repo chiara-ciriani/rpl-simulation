@@ -3,18 +3,18 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+NUM_STREET_LIGHTS=11
+
 width = 30
 height = 30
 num_nodes = 20 
-num_street_lights = 3 
 tx_range = 10 
 max_distance = 10 
-etx = 75
 
 all_results = []
 
 for _ in range(500):
-    results, root_position = send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_range, max_distance, False)
+    results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
     all_results.append((results, root_position))
 
 # AGREGAR TAMBIEN MISMO GRAFICO QUE ANTESSS

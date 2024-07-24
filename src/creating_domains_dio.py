@@ -66,8 +66,8 @@ def add_nodes_to_mpl_domain_disjoint_path(mpl_domain, nodes, verbose):
     if verbose:
         print(f"MPL Domain: {mpl_domain}")
 
-# Función para agregar nodos al dominio MPL
-def add_street_light_to_mpl_domain(mpl_domain, nodes, verbose):
+# Función para agregar street lights al dominio MPL
+def add_nodes_to_minimal_domain(mpl_domain, nodes, verbose):
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
     
     for street_light in street_lights:
@@ -75,8 +75,6 @@ def add_street_light_to_mpl_domain(mpl_domain, nodes, verbose):
 
     if verbose:
         print(f"MPL Domain: {mpl_domain}")
-
-
 
 def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose):
     # Inicializar el terreno y las posiciones de los nodos
@@ -116,7 +114,7 @@ def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx
     return nodes, root_node
 
 
-def plot_network(nodes, mpl_domain_1, mpl_domain_2):
+def plot_network(nodes, mpl_domain_1):
     pos = {node.id: (node.x, node.y) for node in nodes}
     labels = {node.id: node.id for node in nodes}
 
@@ -132,9 +130,6 @@ def plot_network(nodes, mpl_domain_1, mpl_domain_2):
             node_sizes.append(500)
         elif node in mpl_domain_1.nodes:
             node_colors.append('orange')  # Nodos del dominio MPL en naranja
-            node_sizes.append(400)
-        elif node in mpl_domain_2.nodes:
-            node_colors.append('violet')  # Nodos del dominio MPL en violeta
             node_sizes.append(400)
         else:
             node_colors.append('skyblue')  # Otros nodos en azul
