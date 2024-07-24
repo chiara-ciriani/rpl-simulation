@@ -49,10 +49,14 @@ def rpl_operation_second_approach(street_lights, origin_node, verbose):
         origin_node.send_message_upwards(message, verbose)
         routes_from_operation = message.get_route()
 
-    final_routes = routes + routes_from_operation
+    print("routes: ", routes)
+    print("routes from operation: ", routes_from_operation)
+
+    final_routes = routes + [routes_from_operation]
 
     if verbose:
         print()
+        print("final_routes: ", final_routes)
         if isinstance(final_routes, list) and all(isinstance(route, list) for route in final_routes):
             print(f"Routes: {[[node.id if hasattr(node, 'id') else node for node in route] for route in final_routes]}")
         else:
