@@ -49,7 +49,7 @@ def rpl_operation_second_approach(street_lights, origin_node, verbose):
         origin_node.send_message_upwards(message, verbose)
         routes_from_operation = message.get_route()
 
-    final_routes = routes + [routes_from_operation]
+    final_routes = routes + routes_from_operation
 
     if verbose:
         print()

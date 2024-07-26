@@ -8,8 +8,8 @@ from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approac
 
 from creating_domains_dio import add_nodes_to_minimal_domain, compute_tracks, create_network_with_dio, plot_network
 
-STREET_LIGHT_INDEXES = [0, 1, 2]
-NUM_STREET_LIGHTS=3
+STREET_LIGHT_INDEXES = [0, 5, 10]
+NUM_STREET_LIGHTS=11
 
 def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
     env = simpy.Environment()
@@ -72,15 +72,15 @@ def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_ra
     return results, root_position
 
 
-MAX_DISTANCE = 10  # Distancia máxima entre street lights
+MAX_DISTANCE = 5  # Distancia máxima entre street lights
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
-    parser.add_argument('--tx_range', type=int, default=10, help='Transmission range for each node')
-    parser.add_argument('--width', type=int, default=30, help='Width of the network')
-    parser.add_argument('--height', type=int, default=30, help='Height of the network')
-    parser.add_argument('--num_nodes', type=int, default=20, help='Total number of nodes in the network')
-    parser.add_argument('--num_street_lights', type=int, default=3, help='Number of street lights')
+    parser.add_argument('--tx_range', type=int, default=5, help='Transmission range for each node')
+    parser.add_argument('--width', type=int, default=70, help='Width of the network')
+    parser.add_argument('--height', type=int, default=70, help='Height of the network')
+    parser.add_argument('--num_nodes', type=int, default=400, help='Total number of nodes in the network')
+    parser.add_argument('--num_street_lights', type=int, default=11, help='Number of street lights')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     args = parser.parse_args()

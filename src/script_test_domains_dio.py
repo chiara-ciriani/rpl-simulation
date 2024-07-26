@@ -10,14 +10,14 @@ from test_domains_dio_multipath import send_to_all_street_lights_multipath
 NUM_STREET_LIGHTS=11
 
 width = 70
-height = 50
-num_nodes = 200
+height = 70
+num_nodes = 600
 tx_range = 5 
 max_distance = 5 
 
 all_results = []
 
-for _ in range(500):
+for _ in range(150):
     # results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
     results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
     all_results.append((results, root_position))
@@ -27,12 +27,12 @@ for results, root_position in all_results:
     for sl_id, values in results.items():
         data.append({
             'StreetLight': sl_id,
-            'RPL': values[0],
-            'Optimized RPL': values[1],
-            'Projected Routes': values[2],
-            # 'Proposed Solution': values[3],
-            'Proposed Solution - Track Domain': values[3],
-            'Proposed Solution - Common Neighbor Domain': values[4],
+            #'RPL': values[0],
+            #'Optimized RPL': values[1],
+            'Projected Routes': values[0],
+            #'Proposed Solution': values[3],
+            'Proposed Solution - Track Domain': values[1],
+            'Proposed Solution - Common Neighbor Domain': values[2],
             'RootX': root_position[0],
             'RootY': root_position[1],
             'num_nodes': num_nodes
@@ -69,7 +69,8 @@ print(grouped)
 #     plt.show()
 
 # CDF plot for each street light, showing all approaches
-approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
+# approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
+approaches = ['Projected Routes', 'Proposed Solution - Track Domain', 'Proposed Solution - Common Neighbor Domain']
 
 for sl_id in df['StreetLight'].unique():
     plt.figure(figsize=(12, 8))
@@ -79,14 +80,19 @@ for sl_id in df['StreetLight'].unique():
         sns.ecdfplot(data=subset, x=approach, label=approach)
 
     # Annotate Projected Routes and Domain 1 with exact values
-    projected_routes_value = subset['Projected Routes'].unique()[0]
-    proposed_solution_value = subset['Proposed Solution'].unique()[0]
-    
-    plt.axvline(x=projected_routes_value, color='blue', linestyle='--')
-    plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='blue', va='center')
-    
-    plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
-    plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
+    # projected_routes_value = subset['Projected Routes'].unique()[0]
+    # # proposed_solution_value = subset['Proposed Solution'].unique()[0]
+    # proposed_solution_value_1 = subset['Proposed Solution - Track Domain'].unique()[0]
+    # proposed_solution_value_2 = subset['Proposed Solution - Common Neighbor Domain'].unique()[0]
+    # 
+    # plt.axvline(x=projected_routes_value, color='blue', linestyle='--')
+    # plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='blue', va='center')
+    # 
+    # plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
+    # plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
+# 
+    # plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
+    # plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
     
     plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}')
     plt.xlabel('Number of Transmissions')
@@ -99,32 +105,36 @@ approaches2 = ['RPL', 'Optimized RPL']
 # Scatter plot separado por street light y approach
 import matplotlib.colors as mcolors
 
-# Scatter plot separado por street light y approach
-for sl_id in df['StreetLight'].unique():
-    for approach in approaches2:
-        plt.figure(figsize=(12, 8))
-        subset = df[df['StreetLight'] == sl_id]
 
-        # Get the min and max values for the approach to set the color scale
-        vmin = subset[approach].min()
-        vmax = subset[approach].max()
+def show_scatter_plot(df):
+    # Scatter plot separado por street light y approach
+    for sl_id in df['StreetLight'].unique():
+        for approach in approaches2:
+            plt.figure(figsize=(12, 8))
+            subset = df[df['StreetLight'] == sl_id]
 
-        # Handle edge cases where vmin == vmax
-        if vmin == vmax:
-            vmax += 1
+            # Get the min and max values for the approach to set the color scale
+            vmin = subset[approach].min()
+            vmax = subset[approach].max()
 
-        # Create the scatter plot with color bar
-        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-        cmap = plt.get_cmap('viridis')
-        
-        scatter = plt.scatter(subset['RootX'], subset['RootY'], c=subset[approach], cmap=cmap, norm=norm)
-        
-        # Add a color bar with the correct range
-        cbar = plt.colorbar(scatter, label=f'{approach} Value')
-        cbar.set_ticks(np.linspace(vmin, vmax, num=6))
-        cbar.set_ticklabels([f"{tick:.2f}" for tick in np.linspace(vmin, vmax, num=6)])
-        
-        plt.title(f'Root Position vs {approach} for Street Light {sl_id}')
-        plt.xlabel('RootX')
-        plt.ylabel('RootY')
-        plt.show()
+            # Handle edge cases where vmin == vmax
+            if vmin == vmax:
+                vmax += 1
+
+            # Create the scatter plot with color bar
+            norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+            cmap = plt.get_cmap('viridis')
+
+            scatter = plt.scatter(subset['RootX'], subset['RootY'], c=subset[approach], cmap=cmap, norm=norm)
+
+            # Add a color bar with the correct range
+            cbar = plt.colorbar(scatter, label=f'{approach} Value')
+            cbar.set_ticks(np.linspace(vmin, vmax, num=6))
+            cbar.set_ticklabels([f"{tick:.2f}" for tick in np.linspace(vmin, vmax, num=6)])
+
+            plt.title(f'Root Position vs {approach} for Street Light {sl_id}')
+            plt.xlabel('RootX')
+            plt.ylabel('RootY')
+            plt.show()
+
+#show_scatter_plot(df)
