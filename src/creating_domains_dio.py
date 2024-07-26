@@ -52,6 +52,10 @@ def compute_tracks_multipath(nodes, verbose):
                     # First shortest path
                     path1 = nx.shortest_path(graph, source=street_light.id, target=target, weight='weight')
                     
+                    route_nodes1 = [nodes[node_id] for node_id in path1]
+                    track_nodes.update(route_nodes1)
+                    track.install_route_to_target(target, route_nodes1)
+
                     # Remove edges in the first path
                     graph_removed_edges = graph.copy()
                     path_edges = [(path1[i], path1[i+1]) for i in range(len(path1)-1)]
@@ -60,13 +64,64 @@ def compute_tracks_multipath(nodes, verbose):
                     # Second shortest path
                     path2 = nx.shortest_path(graph_removed_edges, source=street_light.id, target=target, weight='weight')
                     
-                    route_nodes1 = [nodes[node_id] for node_id in path1]
                     route_nodes2 = [nodes[node_id] for node_id in path2]
-                    
-                    track_nodes.update(route_nodes1)
                     track_nodes.update(route_nodes2)
+                    track.install_route_to_target(target, route_nodes2)
+                except nx.NetworkXNoPath:
+                    if verbose: 
+                        print(f"No disjoint paths found between {street_light.id} and {target}")
+            else:
+                if verbose:
+                    print(f"Either source {street_light.id} or target {target} is not in the graph")
+        
+        street_light.install_track(track, verbose)
+    
+    return track_nodes
+
+def compute_tracks_multipath_disjoint_paths(nodes, verbose):
+    # Compute shortest paths using Dijkstra's algorithm and create tracks
+    graph = nx.Graph()
+    for node in nodes:
+        for neighbor in node.neighbors:
+            link_quality = node.link_quality[neighbor]
+            weight = 1 - link_quality  # Weight is 1 - PDR
+            graph.add_edge(node.id, neighbor.id, weight=weight)
+
+    street_lights = [node for node in nodes if isinstance(node, StreetLight)]
+
+    track_nodes = set()
+
+    for street_light in street_lights:
+        targets = [sl.id for sl in street_lights if sl.id != street_light.id]
+        track = Track(street_light.id, targets)
+        
+        for target in targets:
+            if street_light.id in graph and target in graph:
+                try:
+                    # First shortest path
+                    path1 = nx.shortest_path(graph, source=street_light.id, target=target, weight='weight')
                     
+                    route_nodes1 = [nodes[node_id] for node_id in path1]
+                    track_nodes.update(route_nodes1)
                     track.install_route_to_target(target, route_nodes1)
+
+                    # Remove edges in the first path
+                    graph_removed_nodes = graph.copy()
+                    
+                    for node in path1:
+                        if node != street_light.id and node != target:
+                            graph_removed_nodes.remove_node(node)
+
+                    if len(path1) == 2:
+                        # Remove edges in the first path
+                        path_edges = [(path1[i], path1[i+1]) for i in range(len(path1)-1)]
+                        graph_removed_nodes.remove_edges_from(path_edges)
+                    
+                    # Second shortest path
+                    path2 = nx.shortest_path(graph_removed_nodes, source=street_light.id, target=target, weight='weight')
+                    
+                    route_nodes2 = [nodes[node_id] for node_id in path2] 
+                    track_nodes.update(route_nodes2)
                     track.install_route_to_target(target, route_nodes2)
                 except nx.NetworkXNoPath:
                     if verbose: 
@@ -217,7 +272,7 @@ def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx
     return nodes, root_node
 
 
-def plot_network(nodes, mpl_domain_1, mpl_domain_2=None):
+def plot_network(nodes, mpl_domain_1, mpl_domain_2=None, mpl_domain_3=None):
     pos = {node.id: (node.x, node.y) for node in nodes}
     labels = {node.id: node.id for node in nodes}
 
@@ -236,6 +291,9 @@ def plot_network(nodes, mpl_domain_1, mpl_domain_2=None):
             node_sizes.append(400)
         elif mpl_domain_2 and node in mpl_domain_2.nodes:
             node_colors.append('violet')  # Nodos del dominio MPL en violeta
+            node_sizes.append(400)
+        elif mpl_domain_3 and node in mpl_domain_3.nodes:
+            node_colors.append('yellow')  # Nodos del dominio MPL en violeta
             node_sizes.append(400)
         else:
             node_colors.append('skyblue')  # Otros nodos en azul
@@ -277,8 +335,9 @@ def plot_network(nodes, mpl_domain_1, mpl_domain_2=None):
     ]
 
     if mpl_domain_2:
-        legend_elements.append(Patch(facecolor='orange', edgecolor='black', label='Track Domain'))
+        legend_elements.append(Patch(facecolor='orange', edgecolor='black', label='Domain Removed Edges'))
         legend_elements.append(Patch(facecolor='violet', edgecolor='black', label='Common Neighbor Domain'))
+        legend_elements.append(Patch(facecolor='yellow', edgecolor='black', label='Domain Disjoint Paths'))
     else:
         legend_elements.append(Patch(facecolor='orange', edgecolor='black', label='Minimal Domain'))
 

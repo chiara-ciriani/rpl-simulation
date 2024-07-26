@@ -69,12 +69,15 @@ def rpl_operation_second_approach(street_lights, origin_node, verbose):
         return calculate_total_hops(final_routes), total_hops_to_root, hops_from_root
     return len(final_routes) - 1, total_hops_to_root, hops_from_root
 
-def rpl_projected_routes(street_lights, origin_node, verbose):
+def rpl_projected_routes(street_lights, origin_node, verbose, track1=True):
     routes = []
 
     for street_light in street_lights:
         if street_light != origin_node:
-            route = origin_node.send_message_through_track(street_light.id)
+            if track1:
+                route = origin_node.send_message_through_track(street_light.id)
+            else:
+                route = origin_node.send_message_through_track2(street_light.id)
             if route:
                 routes.extend(route)
 

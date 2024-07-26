@@ -9,15 +9,15 @@ from test_domains_dio_multipath import send_to_all_street_lights_multipath
 
 NUM_STREET_LIGHTS=11
 
-width = 70
-height = 70
-num_nodes = 600
+width = 65
+height = 60
+num_nodes = 200
 tx_range = 5 
 max_distance = 5 
 
 all_results = []
 
-for _ in range(150):
+for _ in range(500):
     # results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
     results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
     all_results.append((results, root_position))
@@ -29,10 +29,12 @@ for results, root_position in all_results:
             'StreetLight': sl_id,
             #'RPL': values[0],
             #'Optimized RPL': values[1],
-            'Projected Routes': values[0],
+            'Projected Routes - Edges removed': values[0],
+            'Projected Routes - Disjoint Paths': values[1],
             #'Proposed Solution': values[3],
-            'Proposed Solution - Track Domain': values[1],
-            'Proposed Solution - Common Neighbor Domain': values[2],
+            'Proposed Solution - Edges removed': values[2],
+            'Proposed Solution - Disjoint paths': values[3],
+            'Proposed Solution - Common Neighbor Domain': values[4],
             'RootX': root_position[0],
             'RootY': root_position[1],
             'num_nodes': num_nodes
@@ -70,7 +72,7 @@ print(grouped)
 
 # CDF plot for each street light, showing all approaches
 # approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
-approaches = ['Projected Routes', 'Proposed Solution - Track Domain', 'Proposed Solution - Common Neighbor Domain']
+approaches = ['Projected Routes - Edges removed', 'Projected Routes - Disjoint Paths', 'Proposed Solution - Edges removed', 'Proposed Solution - Disjoint paths', 'Proposed Solution - Common Neighbor Domain']
 
 for sl_id in df['StreetLight'].unique():
     plt.figure(figsize=(12, 8))
