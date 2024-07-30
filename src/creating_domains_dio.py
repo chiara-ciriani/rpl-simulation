@@ -35,7 +35,7 @@ def compute_tracks_multipath(nodes, verbose):
     for node in nodes:
         for neighbor in node.neighbors:
             link_quality = node.link_quality[neighbor]
-            weight = 1 - link_quality  # Weight is 1 - PDR
+            weight = -math.log(link_quality)  # Weight is -log(PDR)
             graph.add_edge(node.id, neighbor.id, weight=weight)
 
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
@@ -84,7 +84,7 @@ def compute_tracks_multipath_disjoint_paths(nodes, verbose):
     for node in nodes:
         for neighbor in node.neighbors:
             link_quality = node.link_quality[neighbor]
-            weight = 1 - link_quality  # Weight is 1 - PDR
+            weight = -math.log(link_quality)  # Weight is -log(PDR)
             graph.add_edge(node.id, neighbor.id, weight=weight)
 
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
@@ -149,12 +149,9 @@ def add_nodes_to_multipath_domain_common_neighbors(mpl_domain, nodes, verbose):
         if node not in mpl_domain.nodes:
             mpl_domain.add_node(node, verbose)
 
-    # Function to calculate the PDR between two nodes using ETX
+    # Function to calculate the PDR between two nodes
     def calculate_pdr(node1, node2):
-        etx = node1.calculate_etx(node2)
-        if etx > 0:
-            return 1 / etx
-        return 0
+        return node1.link_quality[node2]
 
     for i in range(len(street_lights)):
         for j in range(i + 1, len(street_lights)):
