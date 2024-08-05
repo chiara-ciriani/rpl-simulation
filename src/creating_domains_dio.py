@@ -35,7 +35,7 @@ def compute_tracks_multipath(nodes, verbose):
     for node in nodes:
         for neighbor in node.neighbors:
             link_quality = node.link_quality[neighbor]
-            weight = weight = 1 / link_quality
+            weight = 1 / link_quality
             graph.add_edge(node.id, neighbor.id, weight=weight)
 
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
@@ -84,7 +84,7 @@ def compute_tracks_multipath_disjoint_paths(nodes, verbose):
     for node in nodes:
         for neighbor in node.neighbors:
             link_quality = node.link_quality[neighbor]
-            weight = weight = 1 / link_quality
+            weight = 1 / link_quality
             graph.add_edge(node.id, neighbor.id, weight=weight)
 
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
