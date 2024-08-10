@@ -24,7 +24,11 @@ def calculate_configuration_probability(config, edges, link_probabilities):
             probability *= (1 - link_probabilities[(edge[0], edge[1])])
     return probability
 
-def brute_force_solution(nodes, source_id, destination_id):
+def is_connected_to_all(G, source_id, destination_ids):
+    # Check if the source is connected to all destination_ids
+    return all(nx.has_path(G, source=source_id, target=dest_id) for dest_id in destination_ids)
+
+def brute_force_solution(nodes, source_id, destination_ids):
     # Crear lista de enlaces y probabilidades de enlace
     edges = []
     link_probabilities = {}
@@ -40,7 +44,7 @@ def brute_force_solution(nodes, source_id, destination_id):
     
     for config in all_configurations:
         G = configuration_to_graph(config, edges, nodes)
-        if nx.has_path(G, source=source_id, target=destination_id):
+        if is_connected_to_all(G, source_id, destination_ids):
             config_prob = calculate_configuration_probability(config, edges, link_probabilities)
             total_probability += config_prob
     

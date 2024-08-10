@@ -9,7 +9,7 @@ from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_mul
 from calculate_prob_bf import brute_force_solution
 from calculate_prob_mc import monte_carlo_simulation
 
-STREET_LIGHT_INDEXES = [0, 5, 11]
+STREET_LIGHT_INDEXES = [0, 5, 10]
 NUM_STREET_LIGHTS=11
 
 NUM_SIMULATIONS=1000
@@ -44,15 +44,15 @@ def calculate_probabilities(width, height, num_nodes, num_street_lights, tx_rang
     results = {}
 
     source_id = STREET_LIGHT_INDEXES[0]
-    destination_id = STREET_LIGHT_INDEXES[len(STREET_LIGHT_INDEXES) - 1]
+    destination_ids = [light.id for light in street_lights if light.id != source_id]
 
-    # probability_bf_domain1 =  brute_force_solution(mpl_domain_1.get_nodes(), source_id, destination_id)
-    # probability_bf_domain2 =  brute_force_solution(mpl_domain_2.get_nodes(), source_id, destination_id)
-    # probability_bf_domain3 =  brute_force_solution(mpl_domain_3.get_nodes(), source_id, destination_id)
+    # probability_bf_domain1 =  brute_force_solution(mpl_domain_1.get_nodes(), source_id, destination_ids)
+    # probability_bf_domain2 =  brute_force_solution(mpl_domain_2.get_nodes(), source_id, destination_ids)
+    # probability_bf_domain3 =  brute_force_solution(mpl_domain_3.get_nodes(), source_id, destination_ids)
 
-    probability_mc_domain1 =  monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_id, NUM_SIMULATIONS)
-    probability_mc_domain2 =  monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_id, NUM_SIMULATIONS)
-    probability_mc_domain3 =  monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_id, NUM_SIMULATIONS)
+    probability_mc_domain1 =  monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+    probability_mc_domain2 =  monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+    probability_mc_domain3 =  monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
 
     # results['probability_bf_domain1'] = probability_bf_domain1
     # results['probability_bf_domain2'] = probability_bf_domain2

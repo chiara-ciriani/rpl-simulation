@@ -8,9 +8,9 @@ from test_domains_probabilities import calculate_probabilities
 
 NUM_STREET_LIGHTS = 11
 
-width = 65
-height = 50
-num_nodes = 200
+width = 70
+height = 70
+num_nodes = 600
 tx_range = 5 
 max_distance = 5 
 
@@ -51,8 +51,8 @@ plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df, x=approach, label=approach)
 
-plt.title('Cumulative Distribution Function (CDF) of Monte Carlo Probabilities')
-plt.xlabel('Probability')
+plt.title('CDF in a network of 600 nodes and 11 street lights')
+plt.xlabel('Probability that all the street lights receive message from SL 0')
 plt.ylabel('Cumulative Probability')
 plt.legend(title='Domain')
 plt.show()
