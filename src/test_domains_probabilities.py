@@ -43,36 +43,24 @@ def calculate_probabilities(width, height, num_nodes, num_street_lights, tx_rang
 
     results = {}
 
-    source_id = STREET_LIGHT_INDEXES[0]
-    destination_ids = [light.id for light in street_lights if light.id != source_id]
+    # Probabilidades para cada origen
+    for source_id in STREET_LIGHT_INDEXES:
+        destination_ids = [light.id for light in street_lights if light.id != source_id]
 
-    # probability_bf_domain1 =  brute_force_solution(mpl_domain_1.get_nodes(), source_id, destination_ids)
-    # probability_bf_domain2 =  brute_force_solution(mpl_domain_2.get_nodes(), source_id, destination_ids)
-    # probability_bf_domain3 =  brute_force_solution(mpl_domain_3.get_nodes(), source_id, destination_ids)
+        probability_mc_domain1 = monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+        probability_mc_domain2 = monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+        probability_mc_domain3 = monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
 
-    probability_mc_domain1 =  monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-    probability_mc_domain2 =  monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-    probability_mc_domain3 =  monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-
-    # results['probability_bf_domain1'] = probability_bf_domain1
-    # results['probability_bf_domain2'] = probability_bf_domain2
-    # results['probability_bf_domain3'] = probability_bf_domain3
-    results['probability_mc_domain1'] = probability_mc_domain1
-    results['probability_mc_domain3'] = probability_mc_domain3
-    results['probability_mc_domain2'] = probability_mc_domain2
+        results[f'probability_mc_domain1_source_{source_id}'] = probability_mc_domain1
+        results[f'probability_mc_domain2_source_{source_id}'] = probability_mc_domain2
+        results[f'probability_mc_domain3_source_{source_id}'] = probability_mc_domain3
 
     if verbose:
-        # print(f"Domain 1 Brute Force: {probability_bf_domain1}")
-        # print(f"Domain 2 Brute Force: {probability_bf_domain2}")
-        # print(f"Domain 3 Brute Force: {probability_bf_domain3}")
-
-        print(f"Domain 1 Monte Carlo: {probability_mc_domain1}")
-        print(f"Domain 2 Monte Carlo: {probability_mc_domain2}")
-        print(f"Domain 3 Monte Carlo: {probability_mc_domain3}")
+        for source_id in STREET_LIGHT_INDEXES:
+            print(f"Domain 1 Monte Carlo (Source {source_id}): {results[f'probability_mc_domain1_source_{source_id}']}")
+            print(f"Domain 2 Monte Carlo (Source {source_id}): {results[f'probability_mc_domain2_source_{source_id}']}")
+            print(f"Domain 3 Monte Carlo (Source {source_id}): {results[f'probability_mc_domain3_source_{source_id}']}")
         
-        print(results)
-
-        # Visualizar la red
         plot_network(nodes, mpl_domain_1, mpl_domain_2, mpl_domain_3)
 
     return results
