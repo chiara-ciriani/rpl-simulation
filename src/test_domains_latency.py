@@ -14,7 +14,7 @@ NUM_STREET_LIGHTS=11
 
 NUM_SIMULATIONS=1000
 
-def calculate_probabilities(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
+def calculate_latency(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
     env = simpy.Environment()
 
     # Crear la red 
@@ -47,19 +47,19 @@ def calculate_probabilities(width, height, num_nodes, num_street_lights, tx_rang
     for source_id in STREET_LIGHT_INDEXES:
         destination_ids = [light.id for light in street_lights if light.id != source_id]
 
-        probability_mc_domain1, _ = monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-        probability_mc_domain2, _ = monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-        probability_mc_domain3, _ = monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+        _, latency_mc_domain1 = monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+        _, latency_mc_domain2 = monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+        _, latency_mc_domain3 = monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
 
-        results[f'probability_mc_domain1_source_{source_id}'] = probability_mc_domain1
-        results[f'probability_mc_domain2_source_{source_id}'] = probability_mc_domain2
-        results[f'probability_mc_domain3_source_{source_id}'] = probability_mc_domain3
+        results[f'latency_mc_domain1_source_{source_id}'] = latency_mc_domain1
+        results[f'latency_mc_domain2_source_{source_id}'] = latency_mc_domain2
+        results[f'latency_mc_domain3_source_{source_id}'] = latency_mc_domain3
 
     if verbose:
         for source_id in STREET_LIGHT_INDEXES:
-            print(f"Domain 1 Monte Carlo (Source {source_id}): {results[f'probability_mc_domain1_source_{source_id}']}")
-            print(f"Domain 2 Monte Carlo (Source {source_id}): {results[f'probability_mc_domain2_source_{source_id}']}")
-            print(f"Domain 3 Monte Carlo (Source {source_id}): {results[f'probability_mc_domain3_source_{source_id}']}")
+            print(f"Domain 1 Monte Carlo (Source {source_id}): {results[f'latency_mc_domain1_source_{source_id}']}")
+            print(f"Domain 2 Monte Carlo (Source {source_id}): {results[f'latency_mc_domain2_source_{source_id}']}")
+            print(f"Domain 3 Monte Carlo (Source {source_id}): {results[f'latency_mc_domain3_source_{source_id}']}")
         
         plot_network(nodes, mpl_domain_1, mpl_domain_2, mpl_domain_3)
 
