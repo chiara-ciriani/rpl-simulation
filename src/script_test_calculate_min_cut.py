@@ -22,14 +22,14 @@ for _ in range(200):
     
     data_vertex_cut.append({
         'Edges removed domain': results['min_vertex_cut_domain1'],
-        'Disjoint paths domain': results['min_vertex_cut_domain2'],
-        'Common Neighbor domain': results['min_vertex_cut_domain3']
+        'Common Neighbor domain': results['min_vertex_cut_domain2'],
+        'Disjoint paths domain': results['min_vertex_cut_domain3']
     })
     
     data_edge_cut.append({
         'Edges removed domain': results['min_edge_cut_domain1'],
-        'Disjoint paths domain': results['min_edge_cut_domain2'],
-        'Common Neighbor domain': results['min_edge_cut_domain3']
+        'Common Neighbor domain': results['min_edge_cut_domain2'],
+        'Disjoint paths domain': results['min_edge_cut_domain3']
     })
 
 # Convertir los datos a DataFrames para cortes de vértices y aristas
@@ -45,24 +45,58 @@ print(df_edge_cut)
 # Lista de enfoques a comparar
 approaches = ['Edges removed domain', 'Disjoint paths domain', 'Common Neighbor domain']
 
-# Graficar el CDF para Min Vertex Cut
+# Calculate percentages for each approach for Min Vertex Cut
+vertex_cut_percentages = {
+    'Approach': [],
+    'Percentage of 1': [],
+    'Percentage of 2': [],
+    'Percentage of 3': []
+}
 
-plt.figure(figsize=(12, 8))
 for approach in approaches:
-    sns.ecdfplot(data=df_vertex_cut, x=approach, label=approach)
-plt.title('CDF in a network of 200 nodes and 11 street lights')
-plt.xlabel('Min Vertex Cut')
-plt.ylabel('Cumulative Probability')
-plt.legend(title='Domain')
+    counts = df_vertex_cut[approach].value_counts(normalize=True) * 100  # Calculate percentage
+    vertex_cut_percentages['Approach'].append(approach)
+    vertex_cut_percentages['Percentage of 1'].append(counts.get(1, 0))
+    vertex_cut_percentages['Percentage of 2'].append(counts.get(2, 0))
+    vertex_cut_percentages['Percentage of 3'].append(counts.get(3, 0))
+
+df_vertex_percentages = pd.DataFrame(vertex_cut_percentages)
+print(df_vertex_percentages)
+
+# Calculate percentages for each approach for Min Edge Cut
+edge_cut_percentages = {
+    'Approach': [],
+    'Percentage of 1': [],
+    'Percentage of 2': [],
+    'Percentage of 3': []
+}
+
+for approach in approaches:
+    counts = df_edge_cut[approach].value_counts(normalize=True) * 100  # Calculate percentage
+    edge_cut_percentages['Approach'].append(approach)
+    edge_cut_percentages['Percentage of 1'].append(counts.get(1, 0))
+    edge_cut_percentages['Percentage of 2'].append(counts.get(2, 0))
+    edge_cut_percentages['Percentage of 3'].append(counts.get(3, 0))
+
+df_edge_percentages = pd.DataFrame(edge_cut_percentages)
+print(df_edge_percentages)
+
+# Plot the results for Min Vertex Cut
+plt.figure(figsize=(12, 8))
+sns.barplot(x='Approach', y='Percentage of 1', data=df_vertex_percentages, color='blue', label='Percentage of 1')
+sns.barplot(x='Approach', y='Percentage of 2', data=df_vertex_percentages, color='orange', label='Percentage of 2', bottom=df_vertex_percentages['Percentage of 1'])
+sns.barplot(x='Approach', y='Percentage of 3', data=df_vertex_percentages, color='green', label='Percentage of 3', bottom=df_vertex_percentages['Percentage of 1'] + df_vertex_percentages['Percentage of 2'])
+plt.title('Min Vertex Cut Percentages in a network of 200 nodes and 11 street lights')
+plt.ylabel('Percentage')
+plt.legend(title='Min Vertex Cut Value')
 plt.show()
 
-# Graficar el CDF para Min Edge Cut
-
+# Plot the results for Min Edge Cut
 plt.figure(figsize=(12, 8))
-for approach in approaches:
-    sns.ecdfplot(data=df_edge_cut, x=approach, label=approach)
-plt.title('CDF in a network of 200 nodes and 11 street lights')
-plt.xlabel('Min Edge Cut')
-plt.ylabel('Cumulative Probability')
-plt.legend(title='Domain')
+sns.barplot(x='Approach', y='Percentage of 1', data=df_edge_percentages, color='blue', label='Percentage of 1')
+sns.barplot(x='Approach', y='Percentage of 2', data=df_edge_percentages, color='orange', label='Percentage of 2', bottom=df_edge_percentages['Percentage of 1'])
+sns.barplot(x='Approach', y='Percentage of 3', data=df_edge_percentages, color='green', label='Percentage of 3', bottom=df_edge_percentages['Percentage of 1'] + df_edge_percentages['Percentage of 2'])
+plt.title('Min Edge Cut Percentages in a network of 200 nodes and 11 street lights')
+plt.ylabel('Percentage')
+plt.legend(title='Min Edge Cut Value')
 plt.show()
