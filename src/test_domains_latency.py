@@ -79,6 +79,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    calculate_probabilities(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, MAX_DISTANCE, args.verbose)
+    calculate_latency(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, MAX_DISTANCE, args.verbose)
 
 

@@ -231,6 +231,11 @@ def add_nodes_to_minimal_domain(mpl_domain, nodes, verbose):
     if verbose:
         print(f"MPL Domain: {mpl_domain}")
 
+def calculate_node_density(width, height, num_nodes):
+    area = width * height
+    node_density = num_nodes / area
+    return node_density
+
 def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose):
     # Inicializar el terreno y las posiciones de los nodos
     nodes = []
