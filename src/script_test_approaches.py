@@ -105,8 +105,8 @@ for sl_id in df['StreetLight'].unique():
         projected_routes_value = subset['Projected Routes'].unique()[0]
         proposed_solution_value = subset['Proposed Solution'].unique()[0]
 
-        plt.axvline(x=projected_routes_value, color='blue', linestyle='--')
-        plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='blue', va='center')
+        plt.axvline(x=projected_routes_value, color='red', linestyle='--')
+        plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='red', va='center')
 
         plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
         plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
@@ -122,7 +122,6 @@ approaches2 = ['RPL', 'Optimized RPL']
 
 # Scatter plot separado por street light y approach
 import matplotlib.colors as mcolors
-
 
 def show_scatter_plot(df):
     # Scatter plot separado por street light y approach

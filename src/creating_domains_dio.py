@@ -27,7 +27,7 @@ def compute_tracks(nodes, verbose):
                 track.install_route_to_target(target, route_nodes)
             else:
                 if verbose: print(f"Either source {street_light.id} or target {target} is not in the graph")
-        street_light.install_track(track, verbose)
+        street_light.install_track(track, True, verbose)
 
 def compute_tracks_multipath(nodes, verbose):
     # Compute shortest paths using Dijkstra's algorithm and create tracks
