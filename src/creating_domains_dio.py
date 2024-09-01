@@ -62,7 +62,12 @@ def compute_tracks_multipath(nodes, verbose):
                     graph_removed_edges.remove_edges_from(path_edges)
                     
                     # Second shortest path
-                    path2 = nx.shortest_path(graph_removed_edges, source=street_light.id, target=target, weight='weight')
+                    try:
+                        path2 = nx.shortest_path(graph_removed_edges, source=street_light.id, target=target, weight='weight')
+                    except nx.NetworkXNoPath:
+                        if verbose:
+                            print(f"No disjoint path found between {street_light.id} and {target}. Using the first path again.")
+                        path2 = path1  # Use the first path if no disjoint path found
                     
                     route_nodes2 = [nodes[node_id] for node_id in path2]
                     track_nodes.update(route_nodes2)
@@ -74,7 +79,7 @@ def compute_tracks_multipath(nodes, verbose):
                 if verbose:
                     print(f"Either source {street_light.id} or target {target} is not in the graph")
         
-        street_light.install_track(track, verbose)
+        street_light.install_track(track, True, verbose)
     
     return track_nodes
 
@@ -118,11 +123,17 @@ def compute_tracks_multipath_disjoint_paths(nodes, verbose):
                         graph_removed_nodes.remove_edges_from(path_edges)
                     
                     # Second shortest path
-                    path2 = nx.shortest_path(graph_removed_nodes, source=street_light.id, target=target, weight='weight')
+                    try:
+                        path2 = nx.shortest_path(graph_removed_nodes, source=street_light.id, target=target, weight='weight')
+                    except nx.NetworkXNoPath:
+                        if verbose:
+                            print(f"No disjoint path found between {street_light.id} and {target}. Using the first path again.")
+                        path2 = path1  # Use the first path if no disjoint path found
                     
-                    route_nodes2 = [nodes[node_id] for node_id in path2] 
+                    route_nodes2 = [nodes[node_id] for node_id in path2]
                     track_nodes.update(route_nodes2)
                     track.install_route_to_target(target, route_nodes2)
+
                 except nx.NetworkXNoPath:
                     if verbose: 
                         print(f"No disjoint paths found between {street_light.id} and {target}")
@@ -130,7 +141,7 @@ def compute_tracks_multipath_disjoint_paths(nodes, verbose):
                 if verbose:
                     print(f"Either source {street_light.id} or target {target} is not in the graph")
         
-        street_light.install_track(track, verbose)
+        street_light.install_track(track, False, verbose)
     
     return track_nodes
 
@@ -154,7 +165,10 @@ def add_nodes_to_multipath_domain_common_neighbors(mpl_domain, nodes, verbose):
         return node1.link_quality[node2]
 
     for i in range(len(street_lights)):
-        for j in range(i + 1, len(street_lights)):
+        if i + 2 > len(street_lights):
+            continue
+        for j in range(i + 1, i + 2):
+        # for j in range(i + 1, len(street_lights)):
             sl1 = street_lights[i]
             sl2 = street_lights[j]
 
@@ -274,7 +288,7 @@ def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx
     return nodes, root_node
 
 
-def plot_network(nodes, mpl_domain_1, mpl_domain_2=None, mpl_domain_3=None):
+def plot_network(nodes, mpl_domain_1, mpl_domain_2=None, mpl_domain_3=None, mpl_domain_4=None):
     pos = {node.id: (node.x, node.y) for node in nodes}
     labels = {node.id: node.id for node in nodes}
 
@@ -295,7 +309,10 @@ def plot_network(nodes, mpl_domain_1, mpl_domain_2=None, mpl_domain_3=None):
             node_colors.append('violet')  # Nodos del dominio MPL en violeta
             node_sizes.append(400)
         elif mpl_domain_3 and node in mpl_domain_3.nodes:
-            node_colors.append('yellow')  # Nodos del dominio MPL en violeta
+            node_colors.append('yellow')  # Nodos del dominio MPL en amarillo
+            node_sizes.append(400)
+        elif mpl_domain_4 and node in mpl_domain_4.nodes:
+            node_colors.append('cyan')  # Nodos del dominio MPL en cyan
             node_sizes.append(400)
         else:
             node_colors.append('skyblue')  # Otros nodos en azul
@@ -345,5 +362,55 @@ def plot_network(nodes, mpl_domain_1, mpl_domain_2=None, mpl_domain_3=None):
 
     plt.legend(handles=legend_elements, loc='upper right', title='Node Types')
 
+    plt.show()
+
+def plot_domain_dodag(nodes, domain, domain_index, verbose=False):
+    """
+    Function to plot the DODAG for a specific MPL domain, highlighting the relationships between nodes
+    and differentiating street lights with a different color. This version ensures that all neighbor
+    relationships are displayed.
+    """
+    G = nx.Graph()  # Usamos Graph para representar todas las relaciones de vecindad
+
+    # Añadir nodos al grafo con posiciones
+    for node in nodes:
+        G.add_node(node.get_id(), pos=(node.x, node.y))
+
+    # Añadir aristas para todas las relaciones de vecindad dentro del dominio
+    domain_nodes = domain.get_nodes()
+    
+    for node in domain_nodes:
+        for neighbor in node.neighbors:
+            if neighbor in domain_nodes:  # Solo agregar si el vecino está en el mismo dominio
+                G.add_edge(node.get_id(), neighbor.get_id())
+
+    # Posiciones de los nodos para el layout del gráfico
+    pos = nx.get_node_attributes(G, 'pos')
+
+    # Identificar street lights dentro del dominio
+    street_lights = [node for node in domain_nodes if isinstance(node, StreetLight)]
+    other_nodes = [node for node in domain_nodes if not isinstance(node, StreetLight)]
+
+    # Dibujar street lights del dominio en amarillo
+    street_light_ids = [node.get_id() for node in street_lights]
+    nx.draw_networkx_nodes(G, pos, nodelist=street_light_ids, node_size=300, node_color='yellow', label=f'Street Lights')
+
+    # Dibujar otros nodos del dominio en rojo
+    other_node_ids = [node.get_id() for node in other_nodes]
+    nx.draw_networkx_nodes(G, pos, nodelist=other_node_ids, node_size=300, node_color='red', label=f'Other Nodes')
+    
+    # Dibujar aristas (relaciones de vecindad) dentro del dominio
+    nx.draw_networkx_edges(G, pos, edgelist=G.edges())
+
+    # Dibujar labels de todos los nodos
+    nx.draw_networkx_labels(G, pos, labels={node.get_id(): node.get_id() for node in domain_nodes})
+    
+    # Título del gráfico
+    plt.title(f'DODAG Network for Domain {domain_index}')
+    
+    # Mostrar leyenda
+    plt.legend()
+    
+    # Mostrar gráfico
     plt.show()
 

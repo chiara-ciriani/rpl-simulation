@@ -10,35 +10,51 @@ from test_domains_dio_multipath import send_to_all_street_lights_multipath
 NUM_STREET_LIGHTS=11
 
 width = 65
-height = 60
+height = 50
 num_nodes = 200
-tx_range = 5 
+tx_range = 5
 max_distance = 5 
 
 all_results = []
 
-for _ in range(500):
-    # results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
-    results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
+MULTIPATH=False
+
+for _ in range(250):
+    if MULTIPATH:
+        # MULTI PATH
+        results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
+    else:
+        # SINGLE PATH
+        results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
     all_results.append((results, root_position))
+
 
 data = []
 for results, root_position in all_results:
     for sl_id, values in results.items():
-        data.append({
-            'StreetLight': sl_id,
-            #'RPL': values[0],
-            #'Optimized RPL': values[1],
-            'Projected Routes - Edges removed': values[0],
-            'Projected Routes - Disjoint Paths': values[1],
-            #'Proposed Solution': values[3],
-            'Proposed Solution - Edges removed': values[2],
-            'Proposed Solution - Disjoint paths': values[3],
-            'Proposed Solution - Common Neighbor Domain': values[4],
-            'RootX': root_position[0],
-            'RootY': root_position[1],
-            'num_nodes': num_nodes
-        })
+        if MULTIPATH:   
+            data.append({
+                'StreetLight': sl_id,
+                'Projected Routes - Edges removed': values[0],
+                'Projected Routes - Disjoint Paths': values[1],
+                'Proposed Solution - Edges removed': values[2],
+                'Proposed Solution - Disjoint paths': values[3],
+                'Proposed Solution - Common Neighbor Domain': values[4],
+                'RootX': root_position[0],
+                'RootY': root_position[1],
+                'num_nodes': num_nodes
+            })
+        else:
+            data.append({
+                'StreetLight': sl_id,
+                'RPL': values[0],
+                'Optimized RPL': values[1],
+                'Projected Routes': values[2],
+                'Proposed Solution': values[3],
+                'RootX': root_position[0],
+                'RootY': root_position[1],
+                'num_nodes': num_nodes
+            })
 
 
 df = pd.DataFrame(data)
@@ -71,8 +87,11 @@ print(grouped)
 #     plt.show()
 
 # CDF plot for each street light, showing all approaches
-# approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
-approaches = ['Projected Routes - Edges removed', 'Projected Routes - Disjoint Paths', 'Proposed Solution - Edges removed', 'Proposed Solution - Disjoint paths', 'Proposed Solution - Common Neighbor Domain']
+
+if MULTIPATH:
+    approaches = ['Projected Routes - Edges removed', 'Projected Routes - Disjoint Paths', 'Proposed Solution - Edges removed', 'Proposed Solution - Disjoint paths', 'Proposed Solution - Common Neighbor Domain']
+else:
+    approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
 
 for sl_id in df['StreetLight'].unique():
     plt.figure(figsize=(12, 8))
@@ -81,20 +100,17 @@ for sl_id in df['StreetLight'].unique():
     for approach in approaches:
         sns.ecdfplot(data=subset, x=approach, label=approach)
 
-    # Annotate Projected Routes and Domain 1 with exact values
-    # projected_routes_value = subset['Projected Routes'].unique()[0]
-    # # proposed_solution_value = subset['Proposed Solution'].unique()[0]
-    # proposed_solution_value_1 = subset['Proposed Solution - Track Domain'].unique()[0]
-    # proposed_solution_value_2 = subset['Proposed Solution - Common Neighbor Domain'].unique()[0]
-    # 
-    # plt.axvline(x=projected_routes_value, color='blue', linestyle='--')
-    # plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='blue', va='center')
-    # 
-    # plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
-    # plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
-# 
-    # plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
-    # plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
+    if not MULTIPATH:   
+        # Annotate Projected Routes and Domain 1 with exact values
+        projected_routes_value = subset['Projected Routes'].unique()[0]
+        proposed_solution_value = subset['Proposed Solution'].unique()[0]
+
+        plt.axvline(x=projected_routes_value, color='blue', linestyle='--')
+        plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='blue', va='center')
+
+        plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
+        plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
+
     
     plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}')
     plt.xlabel('Number of Transmissions')
@@ -139,4 +155,4 @@ def show_scatter_plot(df):
             plt.ylabel('RootY')
             plt.show()
 
-#show_scatter_plot(df)
+# show_scatter_plot(df)

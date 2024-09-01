@@ -16,11 +16,17 @@ class MPL_Domain:
 
             if verbose: print(f"Node {node.id} added to MPL Domain {self.id}")
 
+    def remove_nodes(self):
+        self.nodes = []
+
     def get_message_count(self):
         return self.message_count
     
     def increase_message_count(self):
         self.message_count += 1
+
+    def get_nodes(self):
+        return self.nodes
     
     def __eq__(self, other):
         if isinstance(other, MPL_Domain):

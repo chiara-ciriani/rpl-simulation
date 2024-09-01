@@ -8,10 +8,10 @@ from test_domains_probabilities import calculate_probabilities
 
 NUM_STREET_LIGHTS = 11
 
-width = 70
-height = 70
-num_nodes = 600
-tx_range = 5 
+width = 65
+height = 50
+num_nodes = 200
+tx_range = 10
 max_distance = 5 
 
 data_source_0 = []
@@ -50,7 +50,7 @@ approaches = ['Edges removed domain', 'Disjoint paths domain', 'Common Neighbor 
 plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df_source_0, x=approach, label=approach)
-plt.title('CDF in a network of 600 nodes and 11 street lights')
+plt.title('CDF in a network of 200 nodes and 11 street lights')
 plt.xlabel('Probability that all street lights receive message from SL 0')
 plt.ylabel('Cumulative Probability')
 plt.legend(title='Domain')
@@ -59,7 +59,7 @@ plt.show()
 plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df_source_5, x=approach, label=approach)
-plt.title('CDF in a network of 600 nodes and 11 street lights')
+plt.title('CDF in a network of 200 nodes and 11 street lights')
 plt.xlabel('Probability that all street lights receive message from SL 5')
 plt.ylabel('Cumulative Probability')
 plt.legend(title='Domain')
@@ -68,8 +68,30 @@ plt.show()
 plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df_source_10, x=approach, label=approach)
-plt.title('CDF in a network of 600 nodes and 11 street lights')
+plt.title('CDF in a network of 200 nodes and 11 street lights')
 plt.xlabel('Probability that all street lights receive message from SL 10')
 plt.ylabel('Cumulative Probability')
 plt.legend(title='Domain')
 plt.show()
+
+# Calculate mean and variance for each source
+#mean_variance_stats = []
+#
+#for df, source in zip([df_source_0, df_source_5, df_source_10], ['SL 0', 'SL 5', 'SL 10']):
+#    for approach in approaches:
+#        mean_value = df[approach].mean()
+#        variance_value = df[approach].var()
+#        mean_variance_stats.append({
+#            'Source': source,
+#            'Approach': approach,
+#            'Mean': mean_value,
+#            'Variance': variance_value
+#        })
+#
+#df_stats = pd.DataFrame(mean_variance_stats)
+#
+#print("Mean and Variance Statistics:")
+#print(df_stats)
+#
+## Graficar el CDF para cada origen (SL 0, SL 5, SL 10)
+#approaches = ['Edges removed domain', 'Disjoint paths domain', 'Common Neighbor domain']

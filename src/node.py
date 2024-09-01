@@ -28,6 +28,7 @@ class Node:
         self.mpl_domain_1 = None  # MPL Domain al que pertenece el nodo
         self.mpl_domain_2 = None
         self.mpl_domain_3 = None
+        self.mpl_domain_4 = None
         self.received_messages = []  # Lista de mensajes recibidos
         self.senders = []
 
@@ -186,15 +187,17 @@ class Node:
     # RPL MULTICAST
 
     def get_mpl_domain(self):
-        return [self.mpl_domain_1, self.mpl_domain_2, self.mpl_domain_3]
+        return [self.mpl_domain_1, self.mpl_domain_2, self.mpl_domain_3, self.mpl_domain_4]
     
     def add_mpl_domain(self, mpl_domain):
         if not self.mpl_domain_1:
             self.mpl_domain_1 = mpl_domain
         elif not self.mpl_domain_2:
             self.mpl_domain_2 = mpl_domain
-        else:
+        elif not self.mpl_domain_3:
             self.mpl_domain_3 = mpl_domain
+        else:
+            self.mpl_domain_4 = mpl_domain
 
     def add_sender(self, sender_id):
         self.senders.append(sender_id)
@@ -238,7 +241,9 @@ class Node:
         print(f"MPL Domain 1: {self.mpl_domain_1}")
         print(f"MPL Domain 2: {self.mpl_domain_2}")
         print(f"MPL Domain 3: {self.mpl_domain_3}")
+        print(f"MPL Domain 4: {self.mpl_domain_4}")
         print(f"Received Messages: {[(msg.get_origin(), msg.get_destination()) for msg in self.received_messages]}")
+        print(f"Link quality: {self.link_quality}")
         print()
 
     def __str__(self):

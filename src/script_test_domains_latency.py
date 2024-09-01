@@ -11,7 +11,7 @@ NUM_STREET_LIGHTS = 11
 width = 65
 height = 50
 num_nodes = 200
-tx_range = 5 
+tx_range = 10
 max_distance = 5 
 
 data_source_0 = []

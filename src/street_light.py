@@ -8,7 +8,8 @@ class StreetLight(Node):
         self.turn_on = False
         self.mpl_domain_address_1 = mpl_domain_address
         self.mpl_domain_address_2 = None
-        self.mpl_domain_address_3 = None
+        self.mpl_domain_address_3 = None   # creo que esto se puede borrar
+        self.mpl_domain_address_4 = None
         self.track = None
         self.track2 = None
     
@@ -27,15 +28,15 @@ class StreetLight(Node):
     def __str__(self):
         return f"Street Light {self.id}"
     
-    def install_track(self, track, verbose):
-        if not self.track:
+    def install_track(self, track, is_edges_removed_track, verbose):
+        if is_edges_removed_track:
             self.track = track
         else:
             self.track2 = track
 
         if verbose:
             print(f"Street light {self.id} track:\n")
-            if not self.track2:
+            if is_edges_removed_track:
                 print(self.track)    
             else:
                 print(self.track2)
@@ -45,9 +46,3 @@ class StreetLight(Node):
 
     def send_message_through_track2(self, target):
         return self.track2.send_message_through_track(target)
-    
-    def add_mpl_domain_address_1(self, mpl_domain_address_1):
-        self.mpl_domain_address_1 = mpl_domain_address_1
-    
-    def add_mpl_domain_address_2(self, mpl_domain_address_2):
-        self.mpl_domain_address_2 = mpl_domain_address_2

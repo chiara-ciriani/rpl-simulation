@@ -9,7 +9,7 @@ NUM_STREET_LIGHTS = 11
 width = 65
 height = 50
 num_nodes = 200
-tx_range = 5 
+tx_range = 10
 max_distance = 5 
 
 # Inicializar listas para almacenar los resultados de min cut
@@ -48,17 +48,21 @@ approaches = ['Edges removed domain', 'Disjoint paths domain', 'Common Neighbor 
 # Calculate percentages for each approach for Min Vertex Cut
 vertex_cut_percentages = {
     'Approach': [],
-    'Percentage of 1': [],
-    'Percentage of 2': [],
-    'Percentage of 3': []
 }
+
+# Calculate unique values dynamically for Vertex Cut
+unique_vertex_values = pd.concat([df_vertex_cut[approach] for approach in approaches]).unique()
+unique_vertex_values.sort()
+
+# Initialize the dictionary with unique values
+for val in unique_vertex_values:
+    vertex_cut_percentages[f'Percentage of {val}'] = []
 
 for approach in approaches:
     counts = df_vertex_cut[approach].value_counts(normalize=True) * 100  # Calculate percentage
     vertex_cut_percentages['Approach'].append(approach)
-    vertex_cut_percentages['Percentage of 1'].append(counts.get(1, 0))
-    vertex_cut_percentages['Percentage of 2'].append(counts.get(2, 0))
-    vertex_cut_percentages['Percentage of 3'].append(counts.get(3, 0))
+    for val in unique_vertex_values:
+        vertex_cut_percentages[f'Percentage of {val}'].append(counts.get(val, 0))
 
 df_vertex_percentages = pd.DataFrame(vertex_cut_percentages)
 print(df_vertex_percentages)
@@ -66,37 +70,46 @@ print(df_vertex_percentages)
 # Calculate percentages for each approach for Min Edge Cut
 edge_cut_percentages = {
     'Approach': [],
-    'Percentage of 1': [],
-    'Percentage of 2': [],
-    'Percentage of 3': []
 }
+
+# Calculate unique values dynamically for Edge Cut
+unique_edge_values = pd.concat([df_edge_cut[approach] for approach in approaches]).unique()
+unique_edge_values.sort()
+
+# Initialize the dictionary with unique values
+for val in unique_edge_values:
+    edge_cut_percentages[f'Percentage of {val}'] = []
 
 for approach in approaches:
     counts = df_edge_cut[approach].value_counts(normalize=True) * 100  # Calculate percentage
     edge_cut_percentages['Approach'].append(approach)
-    edge_cut_percentages['Percentage of 1'].append(counts.get(1, 0))
-    edge_cut_percentages['Percentage of 2'].append(counts.get(2, 0))
-    edge_cut_percentages['Percentage of 3'].append(counts.get(3, 0))
+    for val in unique_edge_values:
+        edge_cut_percentages[f'Percentage of {val}'].append(counts.get(val, 0))
 
 df_edge_percentages = pd.DataFrame(edge_cut_percentages)
 print(df_edge_percentages)
 
 # Plot the results for Min Vertex Cut
-plt.figure(figsize=(12, 8))
-sns.barplot(x='Approach', y='Percentage of 1', data=df_vertex_percentages, color='blue', label='Percentage of 1')
-sns.barplot(x='Approach', y='Percentage of 2', data=df_vertex_percentages, color='orange', label='Percentage of 2', bottom=df_vertex_percentages['Percentage of 1'])
-sns.barplot(x='Approach', y='Percentage of 3', data=df_vertex_percentages, color='green', label='Percentage of 3', bottom=df_vertex_percentages['Percentage of 1'] + df_vertex_percentages['Percentage of 2'])
-plt.title('Min Vertex Cut Percentages in a network of 200 nodes and 11 street lights')
-plt.ylabel('Percentage')
-plt.legend(title='Min Vertex Cut Value')
-plt.show()
-
-# Plot the results for Min Edge Cut
-plt.figure(figsize=(12, 8))
-sns.barplot(x='Approach', y='Percentage of 1', data=df_edge_percentages, color='blue', label='Percentage of 1')
-sns.barplot(x='Approach', y='Percentage of 2', data=df_edge_percentages, color='orange', label='Percentage of 2', bottom=df_edge_percentages['Percentage of 1'])
-sns.barplot(x='Approach', y='Percentage of 3', data=df_edge_percentages, color='green', label='Percentage of 3', bottom=df_edge_percentages['Percentage of 1'] + df_edge_percentages['Percentage of 2'])
-plt.title('Min Edge Cut Percentages in a network of 200 nodes and 11 street lights')
-plt.ylabel('Percentage')
-plt.legend(title='Min Edge Cut Value')
-plt.show()
+# plt.figure(figsize=(12, 8))
+# bottom_vals = [0] * len(df_vertex_percentages)  # Initialize bottom values for stacking
+# for val in unique_vertex_values:
+#     sns.barplot(x='Approach', y=f'Percentage of {val}', data=df_vertex_percentages, label=f'Percentage of {val}', bottom=bottom_vals)
+#     bottom_vals += df_vertex_percentages[f'Percentage of {val}'].values  # Update bottom for next stack
+# 
+# plt.title('Min Vertex Cut Percentages in a network of 200 nodes and 11 street lights')
+# plt.ylabel('Percentage')
+# plt.legend(title='Min Vertex Cut Value')
+# plt.show()
+# 
+# # Plot the results for Min Edge Cut
+# plt.figure(figsize=(12, 8))
+# bottom_vals = [0] * len(df_edge_percentages)  # Initialize bottom values for stacking
+# for val in unique_edge_values:
+#     sns.barplot(x='Approach', y=f'Percentage of {val}', data=df_edge_percentages, label=f'Percentage of {val}', bottom=bottom_vals)
+#     bottom_vals += df_edge_percentages[f'Percentage of {val}'].values  # Update bottom for next stack
+# 
+# plt.title('Min Edge Cut Percentages in a network of 200 nodes and 11 street lights')
+# plt.ylabel('Percentage')
+# plt.legend(title='Min Edge Cut Value')
+# plt.show()
+# 

@@ -56,19 +56,19 @@ def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lig
         total_hops_projected_routes2 = rpl_projected_routes(street_lights, origin_node, verbose, False)
         total_hops_domain1 = rpl_multicast(origin_node, mpl_domain_address_1, verbose)
 
-        for node in mpl_domain_1.nodes:
+        for node in mpl_domain_1.get_nodes():
             node.received_messages = []
             node.senders = []
 
         total_hops_domain2 = rpl_multicast(origin_node, mpl_domain_address_2, verbose)
 
-        for node in mpl_domain_2.nodes:
+        for node in mpl_domain_2.get_nodes():
             node.received_messages = []
             node.senders = []
 
         total_hops_domain3 = rpl_multicast(origin_node, mpl_domain_address_3, verbose)
 
-        for node in mpl_domain_3.nodes:
+        for node in mpl_domain_3.get_nodes():
             node.received_messages = []
             node.senders = []
  
@@ -85,7 +85,6 @@ def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lig
 
         # results[street_light.get_id()] = [total_hops_rpl, total_hops_rpl_second, total_hops_projected_routes, total_hops_domain1, total_hops_domain2]
         results[street_light.get_id()] = [total_hops_projected_routes, total_hops_projected_routes2, total_hops_domain1, total_hops_domain3, total_hops_domain2]
-
     if verbose:
         print(results)
         print((f"Root position: {root.x}, {root.y}"))
@@ -101,7 +100,7 @@ MAX_DISTANCE = 5  # Distancia máxima entre street lights
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
-    parser.add_argument('--tx_range', type=int, default=5, help='Transmission range for each node')
+    parser.add_argument('--tx_range', type=int, default=10, help='Transmission range for each node')
     parser.add_argument('--width', type=int, default=65, help='Width of the network')
     parser.add_argument('--height', type=int, default=50, help='Height of the network')
     parser.add_argument('--num_nodes', type=int, default=200, help='Total number of nodes in the network')
