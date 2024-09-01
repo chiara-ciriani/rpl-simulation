@@ -9,7 +9,6 @@ from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approac
 from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_multipath_domain_common_neighbors, compute_tracks_multipath, compute_tracks_multipath_disjoint_paths, create_network_with_dio, plot_network
 
 STREET_LIGHT_INDEXES = [0, 5, 10]
-NUM_STREET_LIGHTS=11
 
 def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
     env = simpy.Environment()
@@ -75,11 +74,11 @@ def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lig
         if verbose:
             # print(f"Standard RPL Operation: {total_hops_rpl}, {hops_to_root_rpl}, {hops_from_root_rpl}")
             # print(f"Standard RPL Operation alternative: {total_hops_rpl_second}, {hops_to_root_rpl_second}, {hops_from_root_rpl_second}")
-            print(f"RPL Projected Routes with Track 1: {total_hops_projected_routes}")
-            print(f"RPL Projected Routes with Track 2: {total_hops_projected_routes2}")
-            print(f"Proposed Solution with Domain 1: {total_hops_domain1}")
-            print(f"Proposed Solution with Domain 3: {total_hops_domain3}")
-            print(f"Proposed Solution with Domain 2: {total_hops_domain2}\n")
+            print(f"Projected Routes with Edges Removed Track: {total_hops_projected_routes}")
+            print(f"Projected Routes with Disjoint Paths Track: {total_hops_projected_routes2}")
+            print(f"Proposed Solution with Edges Removed Domain: {total_hops_domain1}")
+            print(f"Proposed Solution with Disjoint Paths Domain: {total_hops_domain3}")
+            print(f"Proposed Solution with Common Neighbor Domain: {total_hops_domain2}\n")
     
             print("")
 
@@ -100,15 +99,21 @@ MAX_DISTANCE = 5  # Distancia máxima entre street lights
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
-    parser.add_argument('--tx_range', type=int, default=10, help='Transmission range for each node')
-    parser.add_argument('--width', type=int, default=65, help='Width of the network')
-    parser.add_argument('--height', type=int, default=50, help='Height of the network')
+    parser.add_argument('--max_distance', type=int, default=200, help='Distance between street lights')
+    parser.add_argument('--direct_comunication', action='store_true', help='Only direct communication. Not range extended')
+    parser.add_argument('--width', type=int, default=2500, help='Width of the network')
+    parser.add_argument('--height', type=int, default=2500, help='Height of the network')
     parser.add_argument('--num_nodes', type=int, default=200, help='Total number of nodes in the network')
     parser.add_argument('--num_street_lights', type=int, default=11, help='Number of street lights')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     args = parser.parse_args()
 
-    send_to_all_street_lights_multipath(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, MAX_DISTANCE, args.verbose)
+    if args.direct_comunication:
+        tx_range = args.max_distance
+    else:
+        tx_range = args.max_distance * 2
+
+    send_to_all_street_lights_multipath(args.width, args.height, args.num_nodes, args.num_street_lights, tx_range, args.max_distance, args.verbose)
 
 
