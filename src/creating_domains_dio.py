@@ -251,26 +251,33 @@ def calculate_node_density(width, height, num_nodes):
     return node_density
 
 def create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose):
-    # Inicializar el terreno y las posiciones de los nodos
+    # Initialize the terrain and node positions
     nodes = []
     
-    # Calcular la posición de las street lights asegurando que la distancia máxima entre ellas sea max_distance
+    # Calculate total length needed for all street lights with max_distance between them
+    total_street_light_length = (num_street_lights - 1) * max_distance
+    
+    # Calculate starting x position to center street lights
+    x_start = (width - total_street_light_length) / 2
+    y = height / 2  # Center y position
+
     street_light_positions = []
-    x_start = width // 4
-    y = height // 2
+    
+    # Position the street lights centered in the terrain width
     for i in range(num_street_lights):
         x = x_start + i * max_distance
-        if x > width:
-            x = width
         street_light_positions.append((x, y))
     
+    # Create StreetLight nodes at calculated positions
     for i, pos in enumerate(street_light_positions):
         nodes.append(StreetLight(env, i, pos[0], pos[1], tx_range))
 
+    # Create additional random nodes within the terrain
     for i in range(num_street_lights, num_nodes + num_street_lights):
         x, y = random.uniform(0, width), random.uniform(0, height)
         nodes.append(Node(env, i, x, y, tx_range, verbose))
 
+    # Connect nodes that are within transmission range
     for node in nodes:
         for other_node in nodes:
             if node != other_node:
