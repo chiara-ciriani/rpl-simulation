@@ -4,7 +4,7 @@ import simpy
 from mpl_domain import MPL_Domain
 from street_light import StreetLight
 
-from creating_domains_dio import add_nodes_to_multipath_domain_common_neighbors, create_network_with_dio, plot_network, plot_domain_dodag
+from creating_domains_dio import create_network_with_dio, plot_network, plot_domain_dodag
 
 from common_neighbor_domains import add_nodes_to_multipath_domain_common_neighbors, add_nodes_to_multipath_domain_common_neighbors_range_extended, optimize_domain_with_common_neighbor_and_mst, add_nodes_to_cluster_based_domain, calculate_num_clusters
 
@@ -168,15 +168,20 @@ def calculate_metrics_common_neighbors_domain(width, height, num_nodes, num_stre
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
     parser.add_argument('--max_distance', type=int, default=200, help='Distance between street lights')
-    parser.add_argument('--tx_range', type=int, default=10, help='Transmission range for each node')
-    parser.add_argument('--width', type=int, default=65, help='Width of the network')
-    parser.add_argument('--height', type=int, default=30, help='Height of the network')
+    parser.add_argument('--direct_comunication', action='store_true', help='Only direct communication. Not range extended')
+    parser.add_argument('--width', type=int, default=2500, help='Width of the network')
+    parser.add_argument('--height', type=int, default=2500, help='Height of the network')
     parser.add_argument('--num_nodes', type=int, default=200, help='Total number of nodes in the network')
     parser.add_argument('--num_street_lights', type=int, default=11, help='Number of street lights')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     args = parser.parse_args()
 
-    calculate_metrics_common_neighbors_domain(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, args.max_distance, args.verbose)
+    if args.direct_comunication:
+        tx_range = args.max_distance
+    else:
+        tx_range = args.max_distance * 2
+
+    calculate_metrics_common_neighbors_domain(args.width, args.height, args.num_nodes, args.num_street_lights, tx_range, args.max_distance, args.verbose)
 
 

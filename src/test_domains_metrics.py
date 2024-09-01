@@ -154,7 +154,7 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
     parser.add_argument('--max_distance', type=int, default=200, help='Distance between street lights')
-    parser.add_argument('--tx_range', type=int, default=400, help='Transmission range for each node')
+    parser.add_argument('--direct_comunication', action='store_true', help='Only direct communication. Not range extended')
     parser.add_argument('--width', type=int, default=2500, help='Width of the network')
     parser.add_argument('--height', type=int, default=2500, help='Height of the network')
     parser.add_argument('--num_nodes', type=int, default=200, help='Total number of nodes in the network')
@@ -162,6 +162,11 @@ if __name__ == "__main__":
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     args = parser.parse_args()
+
+    if args.direct_comunication:
+        tx_range = args.max_distance
+    else:
+        tx_range = args.max_distance * 2
 
     calculate_metrics(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, args.max_distance, args.verbose)
 
