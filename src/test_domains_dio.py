@@ -1,8 +1,8 @@
 import argparse
 import simpy
 
-from mpl_domain import MPL_Domain
-from street_light import StreetLight
+from classes.mpl_domain import MPL_Domain
+from classes.street_light import StreetLight
 
 from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approach, rpl_projected_routes
 

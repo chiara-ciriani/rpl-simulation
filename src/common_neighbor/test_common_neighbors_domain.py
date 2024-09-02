@@ -4,9 +4,11 @@ import simpy
 from classes.mpl_domain import MPL_Domain
 from classes.street_light import StreetLight
 
-from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_multipath_domain_common_neighbors, compute_tracks_multipath, compute_tracks_multipath_disjoint_paths, create_network_with_dio, plot_network, plot_domain_dodag
+from creating_domains_dio import create_network_with_dio, plot_network, plot_domain_dodag
 
-from protocols import rpl_multicast, rpl_projected_routes
+from common_neighbor_domains import add_nodes_to_multipath_domain_common_neighbors, add_nodes_to_multipath_domain_common_neighbors_range_extended, optimize_domain_with_common_neighbor_and_mst, add_nodes_to_cluster_based_domain, calculate_num_clusters
+
+from protocols import rpl_multicast
 
 from metrics.probability.calculate_prob_mc import monte_carlo_simulation
 
@@ -16,29 +18,30 @@ STREET_LIGHT_INDEXES = [0, 5, 10]
 
 NUM_SIMULATIONS=1000
 
-def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
+def calculate_metrics_common_neighbors_domain(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
     env = simpy.Environment()
 
     # Crear la red 
     nodes, root = create_network_with_dio(env, width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose)
     street_lights = [node for node in nodes if isinstance(node, StreetLight)]
 
-    # Compute tracks
-    track_nodes = compute_tracks_multipath(nodes, verbose)
-    track_nodes2 = compute_tracks_multipath_disjoint_paths(nodes, verbose)
-
     # Agregar nodos al dominio MPL
     mpl_domain_address_1 = "MPL_Domain_1"
     mpl_domain_1 = MPL_Domain(1, mpl_domain_address_1)
-    add_nodes_to_multipath_domain(mpl_domain_1, track_nodes, verbose)
+    add_nodes_to_multipath_domain_common_neighbors(mpl_domain_1, nodes, verbose)
 
     mpl_domain_address_2 = "MPL_Domain_2"
     mpl_domain_2 = MPL_Domain(2, mpl_domain_address_2)
-    add_nodes_to_multipath_domain_common_neighbors(mpl_domain_2, nodes, verbose)
+    add_nodes_to_multipath_domain_common_neighbors_range_extended(mpl_domain_2, nodes, verbose)
 
     mpl_domain_address_3 = "MPL_Domain_3"
     mpl_domain_3 = MPL_Domain(3, mpl_domain_address_3)
-    add_nodes_to_multipath_domain(mpl_domain_3, track_nodes2, verbose)
+    optimize_domain_with_common_neighbor_and_mst(mpl_domain_3, nodes, mpl_domain_1, verbose)
+
+    mpl_domain_address_4 = "MPL_Domain_4"
+    mpl_domain_4 = MPL_Domain(4, mpl_domain_address_4)
+    num_clusters = calculate_num_clusters(width, height, num_nodes, num_street_lights, tx_range)
+    add_nodes_to_cluster_based_domain(mpl_domain_4, nodes, num_clusters, verbose)
 
     # Run the simulation
     env.run(until=30)
@@ -53,7 +56,8 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
     results['domain_lengths'] = {
         'domain1': len(mpl_domain_1.nodes),
         'domain2': len(mpl_domain_2.nodes),
-        'domain3': len(mpl_domain_3.nodes)
+        'domain3': len(mpl_domain_3.nodes),
+        'domain4': len(mpl_domain_4.nodes)
     }
 
     # Calcula las probabilidades para cada origen
@@ -63,21 +67,26 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
         probability_mc_domain1, _ = monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
         probability_mc_domain2, _ = monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
         probability_mc_domain3, _ = monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+        probability_mc_domain4, _ = monte_carlo_simulation(mpl_domain_4.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
 
         results['probabilities'][f'source_{source_id}'] = {
             'domain1': probability_mc_domain1,
             'domain2': probability_mc_domain2,
-            'domain3': probability_mc_domain3
+            'domain3': probability_mc_domain3,
+            'domain4': probability_mc_domain4
         }
 
     # Calcular el corte mínimo de nodos y aristas para desconectar todo el dominio
     min_vertex_cut_domain1, min_edge_cut_domain1 = calculate_min_cut(mpl_domain_1.get_nodes())
     min_vertex_cut_domain2, min_edge_cut_domain2 = calculate_min_cut(mpl_domain_2.get_nodes())
     min_vertex_cut_domain3, min_edge_cut_domain3 = calculate_min_cut(mpl_domain_3.get_nodes())
+    min_vertex_cut_domain4, min_edge_cut_domain4 = calculate_min_cut(mpl_domain_4.get_nodes())
 
     results['min_cuts']['domain1'] = {'vertex_cut': min_vertex_cut_domain1, 'edge_cut': min_edge_cut_domain1}
     results['min_cuts']['domain2'] = {'vertex_cut': min_vertex_cut_domain2, 'edge_cut': min_edge_cut_domain2}
     results['min_cuts']['domain3'] = {'vertex_cut': min_vertex_cut_domain3, 'edge_cut': min_edge_cut_domain3}
+    results['min_cuts']['domain4'] = {'vertex_cut': min_vertex_cut_domain4, 'edge_cut': min_edge_cut_domain4}
+
 
     # Almacenar los resultados de las transmisiones para cada street light
     for street_light_idx in STREET_LIGHT_INDEXES:
@@ -85,8 +94,6 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
         origin_node = street_light
 
         # Realizar simulaciones o cálculos específicos
-        total_hops_projected_routes = rpl_projected_routes(street_lights, origin_node, verbose, True)
-        total_hops_projected_routes2 = rpl_projected_routes(street_lights, origin_node, verbose, False)
         total_hops_domain1 = rpl_multicast(origin_node, mpl_domain_address_1, verbose)
 
         # Limpiar los mensajes recibidos para la siguiente simulación
@@ -106,48 +113,55 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
             node.received_messages = []
             node.senders = []
 
+        total_hops_domain4 = rpl_multicast(origin_node, mpl_domain_address_4, verbose)
+
+        for node in mpl_domain_4.get_nodes():
+            node.received_messages = []
+            node.senders = []
+
         # Almacenar resultados de transmisiones
         results['transmissions'][street_light.get_id()] = {
-            'projected_routes1': total_hops_projected_routes,
-            'projected_routes2': total_hops_projected_routes2,
             'domain1': total_hops_domain1,
             'domain2': total_hops_domain2,
-            'domain3': total_hops_domain3
+            'domain3': total_hops_domain3,
+            'domain4': total_hops_domain4
         }
 
     if verbose:
-        print(f"Edges removed track length: {len(track_nodes)}")
-        print(f"Disjoint paths track length: {len(track_nodes2)}")
-
-        print(f"Edges removed domain length: {len(mpl_domain_1.nodes)}")
-        print(f"Disjoint paths domain length: {len(mpl_domain_3.nodes)}")
-        print(f"Common neighbor domain length: {len(mpl_domain_2.nodes)}\n")
+        print(f"Common Neighbor Domain length: {len(mpl_domain_1.nodes)}")
+        print(f"Common Neighbor Range Extended Domain length: {len(mpl_domain_2.nodes)}")
+        print(f"Common Neighbor Optimized with MST Domain length: {len(mpl_domain_3.nodes)}")
+        print(f"Cluster Based Domain length: {len(mpl_domain_4.nodes)}\n")
 
         for source_id in STREET_LIGHT_INDEXES:
-            print(f"Projected Routes Edges Removed: {results['transmissions'][source_id]['projected_routes1']}")
-            print(f"Projected Routes Disjoint Paths: {results['transmissions'][source_id]['projected_routes2']}")
-            print(f"Proposed Solution with Edges Removed Domain: {results['transmissions'][source_id]['domain1']}")
-            print(f"Proposed Solution with Disjoint Paths Domain: {results['transmissions'][source_id]['domain3']}")
-            print(f"Proposed Solution with Common Neighbor Domain: {results['transmissions'][source_id]['domain2']}\n")
+            print(f"Common Neighbor Domain: {results['transmissions'][source_id]['domain1']}")
+            print(f"Common Neighbor Range Extended Domain: {results['transmissions'][source_id]['domain2']}")
+            print(f"Common Neighbor Optimized with MST Domain: {results['transmissions'][source_id]['domain3']}")
+            print(f"Cluster Based Domain: {results['transmissions'][source_id]['domain4']}\n")
 
-            print(f"Edges Removed Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain1']}")
-            print(f"Disjoint Paths Monte Carlo (Source {source_id}): {results[f'probabilities'][f'source_{source_id}']['domain3']}")
-            print(f"Common Neighbor Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain2']}\n")
+            print(f"Common Neighbor Domain Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain1']}")
+            print(f"Common Neighbor Range Extended Domain Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain2']}")
+            print(f"Common Neighbor Optimized with MST Domain Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain3']}")
+            print(f"Cluster Based Domain Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain4']}\n")
         
-        print(f"Edges Removed Min Vertex Cut: {min_vertex_cut_domain1}")
-        print(f"Edges Removed Min Edge Cut: {min_edge_cut_domain1}")
+        print(f"Common Neighbor Min Vertex Cut: {min_vertex_cut_domain1}")
+        print(f"Common Neighbor Min Edge Cut: {min_edge_cut_domain1}")
 
-        print(f"Disjoint Paths Min Vertex Cut: {min_vertex_cut_domain3}")
-        print(f"Disjoint Paths Min Edge Cut: {min_edge_cut_domain3}")
+        print(f"Common Neighbor Range Extended Min Vertex Cut: {min_vertex_cut_domain2}")
+        print(f"Common Neighbor Range Extended Min Edge Cut: {min_edge_cut_domain2}")
 
-        print(f"Common Neighbor Min Vertex Cut: {min_vertex_cut_domain2}")
-        print(f"Common Neighbor Min Edge Cut: {min_edge_cut_domain2}")
+        print(f"Common Neighbor Optimized with MST Domain Min Vertex Cut: {min_vertex_cut_domain3}")
+        print(f"Common Neighbor Optimized with MST Domain Min Edge Cut: {min_edge_cut_domain3}")
 
-        plot_network(nodes, mpl_domain_1, mpl_domain_2, mpl_domain_3)
+        print(f"Cluster Based Min Vertex Cut: {min_vertex_cut_domain4}")
+        print(f"Cluster Based Min Edge Cut: {min_edge_cut_domain4}")
 
-        plot_domain_dodag(nodes, mpl_domain_1, "Edges Removed", verbose)
-        plot_domain_dodag(nodes, mpl_domain_2, "Common Neighbor", verbose)
-        plot_domain_dodag(nodes, mpl_domain_3, "Disjoint Paths", verbose)
+        plot_network(nodes, mpl_domain_3, mpl_domain_2, mpl_domain_1, mpl_domain_4)
+
+        plot_domain_dodag(nodes, mpl_domain_1, "Common Neighbor", verbose)
+        plot_domain_dodag(nodes, mpl_domain_2, "Common Neighbor Range Extended", verbose)
+        plot_domain_dodag(nodes, mpl_domain_3, "Common Neighbor Optimized with MST", verbose)
+        plot_domain_dodag(nodes, mpl_domain_4, "Cluster Based Domain", verbose)
 
     return results
 
@@ -168,6 +182,6 @@ if __name__ == "__main__":
     else:
         tx_range = args.max_distance * 2
 
-    calculate_metrics(args.width, args.height, args.num_nodes, args.num_street_lights, args.tx_range, args.max_distance, args.verbose)
+    calculate_metrics_common_neighbors_domain(args.width, args.height, args.num_nodes, args.num_street_lights, tx_range, args.max_distance, args.verbose)
 
 

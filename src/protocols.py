@@ -1,5 +1,4 @@
-from message import Message
-from utils import find_shortest_paths
+from classes.message import Message
 
 def calculate_total_hops(routes):
     return sum(len(route) - 1 for route in routes)

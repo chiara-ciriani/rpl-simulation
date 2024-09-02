@@ -4,9 +4,9 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib.patches import Patch
 
-from node import Node
-from street_light import StreetLight
-from track import Track
+from classes.node import Node
+from classes.street_light import StreetLight
+from classes.track import Track
 
 def compute_tracks(nodes, verbose):
      # Compute shortest paths using Dijkstra's algorithm and create tracks

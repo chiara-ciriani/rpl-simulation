@@ -1,14 +1,14 @@
 import argparse
 import simpy
 
-from mpl_domain import MPL_Domain
-from street_light import StreetLight
+from classes.mpl_domain import MPL_Domain
+from classes.street_light import StreetLight
 
 from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approach, rpl_projected_routes
 
 from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_multipath_domain_common_neighbors, compute_tracks_multipath, compute_tracks_multipath_disjoint_paths, create_network_with_dio, plot_network, plot_domain_dodag
 
-from common_neighbor_domains import add_nodes_to_multipath_domain_common_neighbors_range_extended
+from common_neighbor.common_neighbor_domains import add_nodes_to_multipath_domain_common_neighbors_range_extended
 
 STREET_LIGHT_INDEXES = [0, 5, 10]
 
