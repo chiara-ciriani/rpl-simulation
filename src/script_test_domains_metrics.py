@@ -6,11 +6,20 @@ from test_domains_metrics import calculate_metrics
 
 NUM_STREET_LIGHTS = 11
 
-width = 2500
-height = 2000
-num_nodes = 200
-tx_range = 400
-max_distance = 200
+DIRECT_COMUNICATION=True
+
+if DIRECT_COMUNICATION:
+    width = 2500
+    height = 1800
+    num_nodes = 200
+    tx_range = 200
+    max_distance = 200
+else:
+    width = 2500
+    height = 2000
+    num_nodes = 200
+    tx_range = 400
+    max_distance = 200
 
 # Number of transmissions
 all_results = []
@@ -29,7 +38,7 @@ domain_lengths_data = []
 
 # Recolectar datos para estadísticas
 for _ in range(200):
-    results = calculate_metrics(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False, False)
+    results = calculate_metrics(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, DIRECT_COMUNICATION, False)
     
     # Número de transmisiones
     all_results.append(results['transmissions'])

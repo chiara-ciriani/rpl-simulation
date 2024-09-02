@@ -165,10 +165,10 @@ def add_nodes_to_multipath_domain_common_neighbors(mpl_domain, nodes, verbose):
         return node1.link_quality[node2]
 
     for i in range(len(street_lights)):
-        if i + 2 > len(street_lights):
-            continue
-        for j in range(i + 1, i + 2):
-        # for j in range(i + 1, len(street_lights)):
+        # if i + 2 > len(street_lights):
+        #     continue
+        # for j in range(i + 1, i + 2):
+        for j in range(i + 1, len(street_lights)):
             sl1 = street_lights[i]
             sl2 = street_lights[j]
 
