@@ -70,15 +70,12 @@ def send_to_all_street_lights(width, height, num_nodes, num_street_lights, tx_ra
     root_position = (root.x, root.y)
     return results, root_position
 
-
-MAX_DISTANCE = 5  # Distancia máxima entre street lights
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
     parser.add_argument('--max_distance', type=int, default=200, help='Distance between street lights')
     parser.add_argument('--direct_comunication', action='store_true', help='Only direct communication. Not range extended')
     parser.add_argument('--width', type=int, default=2500, help='Width of the network')
-    parser.add_argument('--height', type=int, default=2500, help='Height of the network')
+    parser.add_argument('--height', type=int, default=2000, help='Height of the network')
     parser.add_argument('--num_nodes', type=int, default=200, help='Total number of nodes in the network')
     parser.add_argument('--num_street_lights', type=int, default=11, help='Number of street lights')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')

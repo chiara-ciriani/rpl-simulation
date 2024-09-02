@@ -6,11 +6,13 @@ from street_light import StreetLight
 
 from protocols import rpl_multicast, rpl_operation, rpl_operation_second_approach, rpl_projected_routes
 
-from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_multipath_domain_common_neighbors, compute_tracks_multipath, compute_tracks_multipath_disjoint_paths, create_network_with_dio, plot_network
+from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_multipath_domain_common_neighbors, compute_tracks_multipath, compute_tracks_multipath_disjoint_paths, create_network_with_dio, plot_network, plot_domain_dodag
+
+from common_neighbor_domains import add_nodes_to_multipath_domain_common_neighbors_range_extended
 
 STREET_LIGHT_INDEXES = [0, 5, 10]
 
-def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
+def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lights, tx_range, max_distance, direct_comunication, verbose=False):
     env = simpy.Environment()
 
     # Crear la red 
@@ -28,7 +30,10 @@ def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lig
 
     mpl_domain_address_2 = "MPL_Domain_2"
     mpl_domain_2 = MPL_Domain(2, mpl_domain_address_2)
-    add_nodes_to_multipath_domain_common_neighbors(mpl_domain_2, nodes, verbose)
+    if direct_comunication:
+        add_nodes_to_multipath_domain_common_neighbors(mpl_domain_2, nodes, verbose)
+    else:
+        add_nodes_to_multipath_domain_common_neighbors_range_extended(mpl_domain_2, nodes, verbose)
 
     mpl_domain_address_3 = "MPL_Domain_3"
     mpl_domain_3 = MPL_Domain(3, mpl_domain_address_3)
@@ -91,11 +96,12 @@ def send_to_all_street_lights_multipath(width, height, num_nodes, num_street_lig
         # Visualizar la red
         plot_network(nodes, mpl_domain_1, mpl_domain_2, mpl_domain_3)
 
+        plot_domain_dodag(nodes, mpl_domain_1, "Edges Removed", verbose)
+        plot_domain_dodag(nodes, mpl_domain_2, "Common Neighbor", verbose)
+        plot_domain_dodag(nodes, mpl_domain_3, "Disjoint Paths", verbose)
+
     root_position = (root.x, root.y)
     return results, root_position
-
-
-MAX_DISTANCE = 5  # Distancia máxima entre street lights
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send messages to all street lights in a network simulation.")
@@ -114,6 +120,6 @@ if __name__ == "__main__":
     else:
         tx_range = args.max_distance * 2
 
-    send_to_all_street_lights_multipath(args.width, args.height, args.num_nodes, args.num_street_lights, tx_range, args.max_distance, args.verbose)
+    send_to_all_street_lights_multipath(args.width, args.height, args.num_nodes, args.num_street_lights, tx_range, args.max_distance, args.direct_comunication, args.verbose)
 
 

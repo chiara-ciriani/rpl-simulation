@@ -9,17 +9,24 @@ from test_domains_dio_multipath import send_to_all_street_lights_multipath
 
 NUM_STREET_LIGHTS=11
 
-width = 65
-height = 50
-num_nodes = 200
-tx_range = 5
-max_distance = 5 
-
 all_results = []
 
-MULTIPATH=False
+MULTIPATH=True
 
-for _ in range(250):
+if MULTIPATH:
+    width = 2500
+    height = 2000
+    num_nodes = 200
+    tx_range = 200
+    max_distance = 200
+else:
+    width = 2500
+    height = 2500
+    num_nodes = 200
+    tx_range = 200
+    max_distance = 200
+
+for _ in range(500):
     if MULTIPATH:
         # MULTI PATH
         results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
@@ -45,6 +52,7 @@ for results, root_position in all_results:
                 'num_nodes': num_nodes
             })
         else:
+            if not values[0]: continue
             data.append({
                 'StreetLight': sl_id,
                 'RPL': values[0],
