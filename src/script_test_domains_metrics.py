@@ -6,11 +6,11 @@ from test_domains_metrics import calculate_metrics
 
 NUM_STREET_LIGHTS = 11
 
-width = 65
-height = 50
+width = 2500
+height = 2000
 num_nodes = 200
-tx_range = 10
-max_distance = 5
+tx_range = 400
+max_distance = 200
 
 # Number of transmissions
 all_results = []
@@ -29,7 +29,7 @@ domain_lengths_data = []
 
 # Recolectar datos para estadísticas
 for _ in range(200):
-    results = calculate_metrics(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
+    results = calculate_metrics(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False, False)
     
     # Número de transmisiones
     all_results.append(results['transmissions'])
@@ -105,16 +105,23 @@ print(grouped)
 approaches = ['Projected Routes - Edges removed', 'Projected Routes - Disjoint Paths', 'Proposed Solution - Edges removed', 'Proposed Solution - Disjoint paths', 'Proposed Solution - Common Neighbor Domain']
 
 for sl_id in df['StreetLight'].unique():
-    plt.figure(figsize=(12, 8))
     subset = df[df['StreetLight'] == sl_id]
 
     for approach in approaches:
         sns.ecdfplot(data=subset, x=approach, label=approach)
     
-    plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}')
-    plt.xlabel('Number of Transmissions')
-    plt.ylabel('Cumulative Probability')
-    plt.legend(title='Approach')
+    # Update title and labels with a larger font size
+    plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}', fontsize=14)
+    plt.xlabel('Number of Transmissions', fontsize=14)
+    plt.ylabel('Cumulative Probability', fontsize=12)
+
+    # Increase the font size for tick labels
+    plt.tick_params(axis='both', which='major', labelsize=14)
+
+    # Add grid lines only for the horizontal direction
+    plt.grid(axis='y', linestyle='--', linewidth=0.7)
+
+    plt.legend(title='Approach', fontsize=12, title_fontsize=14)
     plt.show()
 
 
@@ -146,31 +153,40 @@ print(df_stats)
 
 # Graficar el CDF para cada origen (SL 0, SL 5, SL 10)
 
-plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df_source_0, x=approach, label=approach)
-plt.title('CDF in a network of 200 nodes and 11 street lights')
-plt.xlabel('Probability that all street lights receive message from SL 0')
-plt.ylabel('Cumulative Probability')
-plt.legend(title='Domain')
+plt.title('CDF in a network of 200 nodes and 11 street lights', fontsize=14)
+plt.xlabel('Probability that all street lights receive message from SL 0', fontsize=14)
+plt.ylabel('Cumulative Probability', fontsize=12)
+# Increase the font size for tick labels
+plt.tick_params(axis='both', which='major', labelsize=14)
+# Add grid lines only for the horizontal direction
+plt.grid(axis='y', linestyle='--', linewidth=0.7)
+plt.legend(title='Domain', fontsize=12, title_fontsize=14)
 plt.show()
 
-plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df_source_5, x=approach, label=approach)
-plt.title('CDF in a network of 200 nodes and 11 street lights')
-plt.xlabel('Probability that all street lights receive message from SL 5')
-plt.ylabel('Cumulative Probability')
-plt.legend(title='Domain')
+plt.title('CDF in a network of 200 nodes and 11 street lights', fontsize=14)
+plt.xlabel('Probability that all street lights receive message from SL 5', fontsize=14)
+plt.ylabel('Cumulative Probability', fontsize=12)
+# Increase the font size for tick labels
+plt.tick_params(axis='both', which='major', labelsize=14)
+# Add grid lines only for the horizontal direction
+plt.grid(axis='y', linestyle='--', linewidth=0.7)
+plt.legend(title='Domain', fontsize=12, title_fontsize=14)
 plt.show()
 
-plt.figure(figsize=(12, 8))
 for approach in approaches:
     sns.ecdfplot(data=df_source_10, x=approach, label=approach)
-plt.title('CDF in a network of 200 nodes and 11 street lights')
-plt.xlabel('Probability that all street lights receive message from SL 10')
-plt.ylabel('Cumulative Probability')
-plt.legend(title='Domain')
+plt.title('CDF in a network of 200 nodes and 11 street lights', fontsize=14)
+plt.xlabel('Probability that all street lights receive message from SL 10', fontsize=14)
+plt.ylabel('Cumulative Probability', fontsize=12)
+# Increase the font size for tick labels
+plt.tick_params(axis='both', which='major', labelsize=14)
+# Add grid lines only for the horizontal direction
+plt.grid(axis='y', linestyle='--', linewidth=0.7)
+plt.legend(title='Domain', fontsize=12, title_fontsize=14)
 plt.show()
 
 # MIN CUT

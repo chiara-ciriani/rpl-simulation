@@ -17,7 +17,7 @@ if MULTIPATH:
     width = 2500
     height = 2000
     num_nodes = 200
-    tx_range = 200
+    tx_range = 400
     max_distance = 200
 else:
     width = 2500
@@ -26,10 +26,10 @@ else:
     tx_range = 200
     max_distance = 200
 
-for _ in range(500):
+for _ in range(150):
     if MULTIPATH:
         # MULTI PATH
-        results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
+        results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False, False)
     else:
         # SINGLE PATH
         results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
@@ -95,21 +95,19 @@ print(grouped)
 #     plt.show()
 
 # CDF plot for each street light, showing all approaches
-
 if MULTIPATH:
     approaches = ['Projected Routes - Edges removed', 'Projected Routes - Disjoint Paths', 'Proposed Solution - Edges removed', 'Proposed Solution - Disjoint paths', 'Proposed Solution - Common Neighbor Domain']
 else:
     approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
 
 for sl_id in df['StreetLight'].unique():
-    plt.figure(figsize=(12, 8))
     subset = df[df['StreetLight'] == sl_id]
 
     for approach in approaches:
         sns.ecdfplot(data=subset, x=approach, label=approach)
 
     if not MULTIPATH:   
-        # Annotate Projected Routes and Domain 1 with exact values
+        # Annotate Projected Routes and Proposed Solution with minimal domain with exact values
         projected_routes_value = subset['Projected Routes'].unique()[0]
         proposed_solution_value = subset['Proposed Solution'].unique()[0]
 
@@ -119,11 +117,18 @@ for sl_id in df['StreetLight'].unique():
         plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
         plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
 
-    
-    plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}')
-    plt.xlabel('Number of Transmissions')
-    plt.ylabel('Cumulative Probability')
-    plt.legend(title='Approach')
+    # Update title and labels with a larger font size
+    plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}', fontsize=14)
+    plt.xlabel('Number of Transmissions', fontsize=14)
+    plt.ylabel('Cumulative Probability', fontsize=12)
+
+    # Increase the font size for tick labels
+    plt.tick_params(axis='both', which='major', labelsize=14)
+
+    # Add grid lines only for the horizontal direction
+    plt.grid(axis='y', linestyle='--', linewidth=0.7)
+
+    plt.legend(title='Approach', fontsize=12, title_fontsize=14)
     plt.show()
 
 approaches2 = ['RPL', 'Optimized RPL']

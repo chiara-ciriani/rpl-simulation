@@ -6,6 +6,8 @@ from classes.street_light import StreetLight
 
 from creating_domains_dio import add_nodes_to_multipath_domain, add_nodes_to_multipath_domain_common_neighbors, compute_tracks_multipath, compute_tracks_multipath_disjoint_paths, create_network_with_dio, plot_network, plot_domain_dodag
 
+from common_neighbor.common_neighbor_domains import add_nodes_to_multipath_domain_common_neighbors_range_extended
+
 from protocols import rpl_multicast, rpl_projected_routes
 
 from metrics.probability.calculate_prob_mc import monte_carlo_simulation
@@ -16,7 +18,7 @@ STREET_LIGHT_INDEXES = [0, 5, 10]
 
 NUM_SIMULATIONS=1000
 
-def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max_distance, verbose=False):
+def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max_distance, direct_comunication, verbose=False):
     env = simpy.Environment()
 
     # Crear la red 
@@ -34,7 +36,10 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
 
     mpl_domain_address_2 = "MPL_Domain_2"
     mpl_domain_2 = MPL_Domain(2, mpl_domain_address_2)
-    add_nodes_to_multipath_domain_common_neighbors(mpl_domain_2, nodes, verbose)
+    if direct_comunication:
+        add_nodes_to_multipath_domain_common_neighbors(mpl_domain_2, nodes, verbose)
+    else:
+        add_nodes_to_multipath_domain_common_neighbors_range_extended(mpl_domain_2, nodes, verbose)
 
     mpl_domain_address_3 = "MPL_Domain_3"
     mpl_domain_3 = MPL_Domain(3, mpl_domain_address_3)
