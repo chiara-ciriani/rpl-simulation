@@ -62,18 +62,18 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
     }
 
     # Calcula las probabilidades para cada origen
-    for source_id in STREET_LIGHT_INDEXES:
-        destination_ids = [light.id for light in street_lights if light.id != source_id]
-
-        probability_mc_domain1, _ = monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-        probability_mc_domain2, _ = monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-        probability_mc_domain3, _ = monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
-
-        results['probabilities'][f'source_{source_id}'] = {
-            'domain1': probability_mc_domain1,
-            'domain2': probability_mc_domain2,
-            'domain3': probability_mc_domain3
-        }
+    # for source_id in STREET_LIGHT_INDEXES:
+    #     destination_ids = [light.id for light in street_lights if light.id != source_id]
+# 
+    #     probability_mc_domain1, _ = monte_carlo_simulation(mpl_domain_1.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+    #     probability_mc_domain2, _ = monte_carlo_simulation(mpl_domain_2.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+    #     probability_mc_domain3, _ = monte_carlo_simulation(mpl_domain_3.get_nodes(), source_id, destination_ids, NUM_SIMULATIONS)
+# 
+    #     results['probabilities'][f'source_{source_id}'] = {
+    #         'domain1': probability_mc_domain1,
+    #         'domain2': probability_mc_domain2,
+    #         'domain3': probability_mc_domain3
+    #     }
 
     # Calcular el corte mínimo de nodos y aristas para desconectar todo el dominio
     min_vertex_cut_domain1, min_edge_cut_domain1 = calculate_min_cut(mpl_domain_1.get_nodes())
@@ -135,9 +135,9 @@ def calculate_metrics(width, height, num_nodes, num_street_lights, tx_range, max
             print(f"Proposed Solution with Disjoint Paths Domain: {results['transmissions'][source_id]['domain3']}")
             print(f"Proposed Solution with Common Neighbor Domain: {results['transmissions'][source_id]['domain2']}\n")
 
-            print(f"Edges Removed Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain1']}")
-            print(f"Disjoint Paths Monte Carlo (Source {source_id}): {results[f'probabilities'][f'source_{source_id}']['domain3']}")
-            print(f"Common Neighbor Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain2']}\n")
+            # print(f"Edges Removed Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain1']}")
+            # print(f"Disjoint Paths Monte Carlo (Source {source_id}): {results[f'probabilities'][f'source_{source_id}']['domain3']}")
+            # print(f"Common Neighbor Monte Carlo (Source {source_id}): {results['probabilities'][f'source_{source_id}']['domain2']}\n")
         
         print(f"Edges Removed Min Vertex Cut: {min_vertex_cut_domain1}")
         print(f"Edges Removed Min Edge Cut: {min_edge_cut_domain1}")

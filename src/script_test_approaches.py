@@ -1,3 +1,4 @@
+from matplotlib.lines import Line2D
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -15,21 +16,23 @@ MULTIPATH=True
 
 if MULTIPATH:
     width = 2500
-    height = 2000
-    num_nodes = 200
-    tx_range = 400
-    max_distance = 200
-else:
-    width = 2500
-    height = 2500
+    height = 1800
+    # height = 2000
     num_nodes = 200
     tx_range = 200
+    # tx_range = 400
     max_distance = 200
+else:
+    width = 625
+    height = 500
+    num_nodes = 200
+    tx_range = 50
+    max_distance = 50
 
 for _ in range(150):
     if MULTIPATH:
         # MULTI PATH
-        results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False, False)
+        results, root_position = send_to_all_street_lights_multipath(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, tx_range == max_distance, False)
     else:
         # SINGLE PATH
         results, root_position = send_to_all_street_lights(width, height, num_nodes, NUM_STREET_LIGHTS, tx_range, max_distance, False)
@@ -42,11 +45,11 @@ for results, root_position in all_results:
         if MULTIPATH:   
             data.append({
                 'StreetLight': sl_id,
-                'Projected Routes - Edges removed': values[0],
-                'Projected Routes - Disjoint Paths': values[1],
-                'Proposed Solution - Edges removed': values[2],
-                'Proposed Solution - Disjoint paths': values[3],
-                'Proposed Solution - Common Neighbor Domain': values[4],
+                'Projected Routes: Edges Removed': values[0],
+                'Projected Routes: Nodes Removed': values[1],
+                'P2P-MPL: Edges Removed': values[2],
+                'P2P-MPL: Nodes Removed': values[3],
+                'P2P-MPL: Common Neighbor': values[4],
                 'RootX': root_position[0],
                 'RootY': root_position[1],
                 'num_nodes': num_nodes
@@ -55,10 +58,10 @@ for results, root_position in all_results:
             if not values[0]: continue
             data.append({
                 'StreetLight': sl_id,
-                'RPL': values[0],
-                'Optimized RPL': values[1],
+                'Plain RPL': values[0],
+                'RPL with Gateway': values[1],
                 'Projected Routes': values[2],
-                'Proposed Solution': values[3],
+                'P2P-MPL': values[3],
                 'RootX': root_position[0],
                 'RootY': root_position[1],
                 'num_nodes': num_nodes
@@ -96,42 +99,128 @@ print(grouped)
 
 # CDF plot for each street light, showing all approaches
 if MULTIPATH:
-    approaches = ['Projected Routes - Edges removed', 'Projected Routes - Disjoint Paths', 'Proposed Solution - Edges removed', 'Proposed Solution - Disjoint paths', 'Proposed Solution - Common Neighbor Domain']
+    approaches = ['Projected Routes: Edges Removed', 'Projected Routes: Nodes Removed', 'P2P-MPL: Edges Removed', 'P2P-MPL: Nodes Removed', 'P2P-MPL: Common Neighbor']
+    colors = {
+    'Projected Routes: Edges Removed': 'red',
+    'Projected Routes: Nodes Removed': 'red',
+    'P2P-MPL: Edges Removed': 'green',
+    'P2P-MPL: Nodes Removed': 'green',
+    'P2P-MPL: Common Neighbor': 'green'
+    }
+    markers = {
+    'Projected Routes: Edges Removed': 'o',  # Circulo
+    'Projected Routes: Nodes Removed': "X",  # X
+    'P2P-MPL: Edges Removed': 'o',  # Circulo
+    'P2P-MPL: Nodes Removed': "X",  # X
+    'P2P-MPL: Common Neighbor': '^'  # Triángulo
+    }
+    marker_size = 50
 else:
-    approaches = ['RPL', 'Optimized RPL', 'Projected Routes', 'Proposed Solution']
+    approaches = ['Plain RPL', 'RPL with Gateway', 'Projected Routes', 'P2P-MPL']
+    colors = {
+        'Plain RPL': 'blue',
+        'RRPL with Gateway': 'orange',
+        'Projected Routes': 'red',
+        'P2P-MPL': 'green'
+    }
+    markers = {
+    'Plain RPL': "o",  # Circulo
+    'RPL with Gateway': "s",  # X
+    'Projected Routes': "X",  # Circulo
+    'P2P-MPL': ">" # X
+    }
+    marker_size = 50
+
+plt.figure(figsize=(10, 6))
+
+# Tamaño fijo de la figura en pulgadas
+FIGURE_SIZE = (8, 5)  # Ancho x Alto en pulgadas
+DPI = 300  # Resolución en puntos por pulgada
+X_LIMITS = (0, 350)  # Límite fijo para el eje X
+Y_LIMITS = (0, 1)  # Límite fijo para el eje Y
+X_TICKS = range(0, 351, 50)  # Divisiones uniformes en X
+Y_TICKS = np.linspace(0, 1, 6)  # Divisiones uniformes en Y
+
+# Almacenar elementos de leyenda
+legend_elements = []
 
 for sl_id in df['StreetLight'].unique():
+    # if sl_id == 0: continue
     subset = df[df['StreetLight'] == sl_id]
 
-    for approach in approaches:
-        sns.ecdfplot(data=subset, x=approach, label=approach)
+    plt.figure(figsize=FIGURE_SIZE)
 
+    for approach in approaches:
+        # Generar la línea de ECDF
+        ecdf_line = sns.ecdfplot(
+            data=subset, 
+            x=approach, 
+            label=approach, 
+            color=colors[approach],  # Asignar color
+        )
+
+        # Calcular manualmente el ECDF
+        x_values = np.sort(subset[approach].values)
+        y_values = np.arange(1, len(x_values)+1) / len(x_values)
+
+        # Dibujar los marcadores solo en puntos espaciados
+        marker_indices = np.arange(0, len(x_values), 5)  # Cambia el 5 para ajustar la separación
+
+        plt.scatter(
+            x_values[marker_indices], 
+            y_values[marker_indices], 
+            color=colors[approach], 
+            marker=markers[approach], 
+            s=marker_size
+        )
+
+        # Agregar tanto la línea como el marcador a la leyenda
+        legend_elements.append(Line2D([0], [0], color=colors[approach], lw=2, 
+                                  label=approach, marker=markers[approach], 
+                                  markersize=10, markerfacecolor=colors[approach], 
+                                  markeredgewidth=0))  # Esto agrega tanto la línea como el marcador
+        
     if not MULTIPATH:   
         # Annotate Projected Routes and Proposed Solution with minimal domain with exact values
         projected_routes_value = subset['Projected Routes'].unique()[0]
-        proposed_solution_value = subset['Proposed Solution'].unique()[0]
+        proposed_solution_value = subset['P2P-MPL'].unique()[0]
+        
+        # Línea y texto para Projected Routes
+        plt.axvline(x=projected_routes_value, color='red', linestyle='dotted')  # Línea discontinua para Projected Routes
+        plt.text(projected_routes_value + 5, 0.5, f'{projected_routes_value}', color='red', va='center', 
+                 ha='left', fontsize=14, fontweight='bold')  # Mover el texto un poco a la derecha (+5 en x)
+        
+        # Línea y texto para Proposed Solution
+        plt.axvline(x=proposed_solution_value, color='green', linestyle='solid')  # Línea continua para Proposed Solution
+        plt.text(proposed_solution_value + 5, 0.5, f'{proposed_solution_value}', color='green', va='center', 
+         ha='left', fontsize=14, fontweight='bold')  # Mover el texto un poco a la derecha (+5 en x)
 
-        plt.axvline(x=projected_routes_value, color='red', linestyle='--')
-        plt.text(projected_routes_value, 0.5, f'{projected_routes_value}', color='red', va='center')
+    # Configurar los ejes con límites y ticks fijos
+    plt.xlim(X_LIMITS)
+    plt.ylim(Y_LIMITS)
+    plt.xticks(X_TICKS)
+    plt.yticks(Y_TICKS)
 
-        plt.axvline(x=proposed_solution_value, color='green', linestyle='--')
-        plt.text(proposed_solution_value, 0.5, f'{proposed_solution_value}', color='green', va='center')
-
-    # Update title and labels with a larger font size
-    plt.title(f'Cumulative Distribution Function of Approaches for Street Light {sl_id}', fontsize=14)
+    # Actualizar el título y las etiquetas
     plt.xlabel('Number of Transmissions', fontsize=14)
     plt.ylabel('Cumulative Probability', fontsize=12)
 
-    # Increase the font size for tick labels
+    # Aumentar el tamaño de fuente para las etiquetas de los ticks
     plt.tick_params(axis='both', which='major', labelsize=14)
 
-    # Add grid lines only for the horizontal direction
+    # Añadir líneas de cuadrícula solo en la dirección horizontal
     plt.grid(axis='y', linestyle='--', linewidth=0.7)
 
-    plt.legend(title='Approach', fontsize=12, title_fontsize=14)
+    # Crear una lista de elementos de la leyenda
+    legend_elements = [Line2D([0], [0], marker=markers[approach], color='w',
+                               label=approach, markerfacecolor=colors[approach], markersize=10)
+                       for approach in approaches]
+
+    # Mostrar la leyenda
+    plt.legend(handles=legend_elements, fontsize=12)
     plt.show()
 
-approaches2 = ['RPL', 'Optimized RPL']
+approaches2 = ['Plain RPL', 'RPL with Gateway']
 
 # Scatter plot separado por street light y approach
 import matplotlib.colors as mcolors
